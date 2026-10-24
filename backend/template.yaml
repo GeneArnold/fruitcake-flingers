@@ -1,0 +1,93 @@
+# The family score service for every game: one DynamoDB table and one Lambda with a public
+# function URL. Deployed by backend/deploy.sh, which also uploads the function's code.
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Family games score service (high scores, weekly boards, most-wanted elves)
+
+Parameters:
+  FamilyCode:
+    Type: String
+    Default: fruitcake-2026
+    Description: Must match familyCode in js/config.js. Keeps random traffic out; not a secret.
+
+Resources:
+  Scores:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: PK, AttributeType: S }
+        - { AttributeName: SK, AttributeType: S }
+      KeySchema:
+        - { AttributeName: PK, KeyType: HASH }
+        - { AttributeName: SK, KeyType: RANGE }
+      TimeToLiveSpecification:
+        AttributeName: expires
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  ServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: scores-table
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:Query]
+                Resource: !GetAtt Scores.Arn
+
+  Service:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs22.x
+      Handler: index.handler
+      MemorySize: 256
+      Timeout: 10
+      Role: !GetAtt ServiceRole.Arn
+      Environment:
+        Variables:
+          TABLE: !Ref Scores
+          FAMILY_CODE: !Ref FamilyCode
+      Code:
+        # Placeholder until deploy.sh uploads the real code.
+        ZipFile: "exports.handler = async () => ({ statusCode: 503, body: 'not deployed yet' });"
+
+  ServiceLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Service}
+      RetentionInDays: 30
+
+  ServiceUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt Service.Arn
+      AuthType: NONE
+      Cors:
+        AllowOrigins: ["*"]
+        AllowMethods: [GET, POST]
+        AllowHeaders: [content-type]
+        MaxAge: 86400
+
+  PublicUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Service
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+
+Outputs:
+  Url:
+    Description: Put this in js/config.js as scoresUrl
+    Value: !GetAtt ServiceUrl.FunctionUrl

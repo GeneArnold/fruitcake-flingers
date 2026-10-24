@@ -1,0 +1,61 @@
+{
+  "_note": "One of these is said at random whenever an elf is hit, misses, or gets a gentle throw. \"id\" names the line's voice clips: sayings/voices/v<n>/<id>.mp3, made by tools/make-voices.mjs, which also fills in \"voices\". \"trash\" lines are for sharing a score; {elf}, {score} and {level} are filled in.",
+  "hit": [
+    { "id": "not-the-face", "text": "Not the face!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "is-that-raisins", "text": "Is that... RAISINS?!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "who-even-likes-fruitcake", "text": "Who even LIKES fruitcake?", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "i-m-telling-santa", "text": "I'm telling Santa!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "my-hat-my-beautiful-hat", "text": "My hat! My beautiful hat!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "that-one-s-going-on-the-naughty-list", "text": "That one's going on the naughty list.", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "ow-my-jingle-bells", "text": "Ow! My jingle bells!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "that-cake-is-older-than-me", "text": "That cake is older than me!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "somebody-call-the-north-pole", "text": "Somebody call the North Pole!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "i-can-taste-the-candied-cherries", "text": "I can taste the candied cherries!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "was-that-store-bought", "text": "Was that store-bought?!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "right-in-the-tinsel", "text": "Right in the tinsel!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "ho-ho-ow", "text": "Ho ho... OW!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "i-just-did-my-hair", "text": "I just did my hair!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "pass-the-eggnog-i-need-it", "text": "Pass the eggnog. I need it.", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "that-s-it-no-cookies-for-you", "text": "That's it, no cookies for you!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "rude", "text": "Rude!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "ow-ow-owwie", "text": "Ow, ow, owwie!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "i-regift-those-you-know", "text": "I regift those, you know!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "fruitcake-in-this-economy", "text": "Fruitcake? In THIS economy?", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "brain-freeze-cake-freeze", "text": "Brain freeze! Cake freeze!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "lucky-shot", "text": "Lucky shot!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "not-in-front-of-the-reindeer", "text": "Not in front of the reindeer!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "i-m-seeing-snowflakes", "text": "I'm seeing snowflakes!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "was-that-a-brick", "text": "Was that a brick?!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "okay-i-deserved-that-one", "text": "Okay, I deserved that one.", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "somebody-get-me-a-napkin", "text": "Somebody get me a napkin!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "my-elf-insurance-won-t-cover-this", "text": "My elf insurance won't cover this!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "not-again", "text": "Not again!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "feliz-navi-duck", "text": "Feliz Navi-DUCK!", "voices": ["v0", "v1", "v2", "v3"] }
+  ],
+  "miss": [
+    { "id": "ha-missed-me", "text": "Ha! Missed me!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "nyah-nyah", "text": "Nyah nyah!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "too-slow", "text": "Too slow!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "is-that-all-you-got", "text": "Is that all you got?", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "over-here", "text": "Over here!", "voices": ["v0", "v1", "v2", "v3"] }
+  ],
+  "gentle": [
+    { "id": "too-gentle", "text": "Too gentle!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "throw-it-like-you-mean-it", "text": "Throw it like you mean it!", "voices": ["v0", "v1", "v2", "v3"] },
+    { "id": "is-that-a-fruitcake-or-a-feather", "text": "Is that a fruitcake or a feather?", "voices": ["v0", "v1", "v2", "v3"] }
+  ],
+  "trash": [
+    { "text": "Beat THAT, slowpoke." },
+    { "text": "{score} points on {level}. Your move." },
+    { "text": "{elf} is still picking raisins out of their hat." },
+    { "text": "Grandma throws harder than you. I checked." },
+    { "text": "I'd say good luck, but you'll need a miracle." },
+    { "text": "Fruitcake champion of the world. Bow down." },
+    { "text": "Warm up your flicking finger. You'll need it." },
+    { "text": "Read it and weep, then eat a fruitcake." },
+    { "text": "{level} is MY house now." },
+    { "text": "I splatted elves you've never even heard of." },
+    { "text": "Your high score called. It wants a hug." },
+    { "text": "Ho ho ho, you're going down." }
+  ]
+}

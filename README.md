@@ -1,0 +1,85 @@
+# Fruitcake Flingers
+
+A phone game for the family: elves pop up around a level and you flick a fruitcake at them.
+Plain HTML and JavaScript with [Phaser 3.90](https://phaser.io) saved in `vendor/`. There is no
+build step, it installs on phones as an app, and it plays offline.
+
+The design doc: https://claude.ai/artifact/NgsJZ2k9yr79xoKTZctyNy
+
+## Run it on a computer
+
+```
+python3 -m http.server 8791 --bind 127.0.0.1
+```
+
+Open http://127.0.0.1:8791 and drag with the mouse to flick. Add `?debug` to the address to outline
+every elf spot and don't-hit item, which helps when lining spots up with new art.
+On localhost the offline cache is switched off, so edits show up on a plain reload.
+
+## How to play
+
+- **First time:** swipe in your three initials, arcade style (↑ ↓ change a letter, → next).
+- **Title:** swipe up to play, sideways to change level, down for the high scores.
+  Tap your initials (top right) to change them.
+- **Play:** touch the bottom of the screen and flick the fruitcake at an elf. A slow or sideways
+  flick does not count and does not use up a cake. A round is 10 fruitcakes.
+- Hit two elves with one fruitcake for a combo (double points), right in the face for +50.
+  Don't land a short throw on Grandma's good china.
+- **After a round:** swipe up to go again, down for the high scores, left (or tap TRASH TALK) to
+  text your score with a dare link, right for the menu.
+- **High scores:** a top 10 per level, then MOST WANTED, the elves hit most. Swipe sideways.
+- **Dares:** a shared link like `…/?beat=GEN-4250-mall` opens that level with
+  "GEN DARES YOU: BEAT 4,250", and the results say who won.
+
+## Releasing
+
+The game is hosted on Amplify, connected to the GitHub repo: **every push to `main` is a release.**
+`amplify.yml` copies the game's files and stamps the commit into `sw.js`, so phones that installed
+the game pick up the new version on their next visit. Nothing to bump by hand.
+
+## The family score service
+
+`backend/` is one Lambda and one DynamoDB table that keeps the family high-score boards and the
+family-wide MOST WANTED count. It serves every game, keyed by `game` in `js/config.js`.
+
+- Deploy or update: `AWS_PROFILE=<profile> bash backend/deploy.sh` (needs the AWS CLI). It runs the
+  tests, deploys `template.yaml`, uploads the code, checks it answers, and prints the URL.
+- Put that URL in `js/config.js` as `scoresUrl`. Until then every board stays on the phone.
+- Tests: `node backend/test.mjs`.
+- Rounds played with no signal wait on the phone and post the next time the game opens.
+
+## Files
+
+| File | What it does |
+|---|---|
+| `elves/elves.json` | The cast: id, name, voice number, face pictures |
+| `elves/faces/` | Face pictures. `normal` is required; `dazed` and `splat` are optional |
+| `sayings/sayings.json` | Lines: `hit`, `miss`, `gentle` (spoken) and `trash` (for texting a score) |
+| `sayings/voices/v<n>/` | Recorded lines, one folder per elf voice |
+| `js/levels.js` | The levels: a background, elf spots, don't-hit items. Add a level here |
+| `js/flick.js` | Turns a swipe into a throw (tested by `node tools/test-flick.mjs`) |
+| `js/elf.js` | One elf: pops up, walks or flies, gets splatted |
+| `js/cast.js` | The elves and sayings, who appears next, which voice clip to play |
+| `js/storage.js` | What the phone remembers: initials, its top 10 per level, hits, unsent rounds |
+| `js/online.js` | Talks to the family score service; queues rounds while offline |
+| `js/share.js` | Trash talk: the share sheet (or a text message), the score picture, dare links |
+| `js/config.js` | The score service's URL and the family code |
+| `js/textures.js` | Placeholder art drawn in code (elf bodies, hats, fruitcake, splat) |
+| `js/audio.js` | Placeholder sound effects, and the voice clips |
+| `js/scenes/` | Boot, Name (initials), Title, Play, Results, Board (high scores) |
+| `sw.js`, `manifest.webmanifest` | Offline play and installing as an app |
+| `amplify.yml` | How Amplify publishes a push |
+| `backend/` | The family score service (Lambda, DynamoDB, deploy script, tests) |
+| `tools/` | Makes the elves, the voices and the icons; the flick test |
+
+## Changing things
+
+- **An elf:** add an entry to `elves/elves.json` with a face picture (square PNG, WebP or SVG with
+  a transparent background, head about 72% of the width). `node tools/make-elves.mjs` redraws the
+  placeholder cast.
+- **A saying:** add it to `sayings/sayings.json` with a short `id`, then
+  `node tools/make-voices.mjs` records just the new lines. The voices, and how squeaky each one is,
+  are set at the top of that script; Chatterbox runs on cerebro (http://192.168.40.110:8004).
+  `--force` re-records everything.
+- **A level:** add an entry to `LEVELS` in `js/levels.js`. For the artist's art, replace the
+  level's `paint` function with one that places the picture, and nudge spots with `?debug` on.
