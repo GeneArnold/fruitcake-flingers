@@ -52,7 +52,7 @@ export class BoardScene extends Phaser.Scene {
     if (page === MOST_WANTED) {
       this.drawMostWanted(store.get("hits"), "THIS PHONE");
       const family = await online.mostWanted();
-      if (family && this.page === page && this.scene.isActive()) {
+      if (family && Object.keys(family).length && this.page === page && this.scene.isActive()) {
         this.content.removeAll(true);
         this.drawMostWanted(family, "THE WHOLE FAMILY");
       }
@@ -61,7 +61,8 @@ export class BoardScene extends Phaser.Scene {
     const level = LEVELS[page];
     this.drawScores(level, store.board(level.id), "THIS PHONE");
     const family = await online.topScores(level.id);
-    if (family && this.page === page && this.scene.isActive()) {
+    // Until anyone has posted on this level, the phone's own board is more fun than an empty one.
+    if (family?.length && this.page === page && this.scene.isActive()) {
       this.content.removeAll(true);
       this.drawScores(level, family, "THE WHOLE FAMILY");
     }

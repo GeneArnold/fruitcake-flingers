@@ -33,19 +33,24 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
 
 ## Releasing
 
+The game is at **https://fruitcake.thefunshed.com**. `thefunshed.com` is the home for all of Gene's fun
+projects, games and otherwise, one subdomain each, registered in Route 53 in the same account.
+
+Everything online (Amplify and the score service) lives in the **Entertainment** AWS account, a
+member of the Gene Arnold Consulting organization, so it stays separate from Ask Bento and other products.
+
 The game is hosted on Amplify, connected to the GitHub repo: **every push to `main` is a release.**
 `amplify.yml` copies the game's files and stamps the commit into `sw.js`, so phones that installed
 the game pick up the new version on their next visit. Nothing to bump by hand.
 
-## The family score service
+## The family score board
 
-`backend/` is one Lambda and one DynamoDB table that keeps the family high-score boards and the
-family-wide MOST WANTED count. It serves every game, keyed by `game` in `js/config.js`.
+The online high scores and the everyone-wide MOST WANTED count live in the **Shed service** at
+`https://api.thefunshed.com`, shared by every Fun Shed app. Its code is in the private `shed` repo
+(GitHub: GeneArnold/shed). This game is the `fruitcake` app there, and its address is `scoresUrl` in
+`js/config.js`; set it to `null` to keep every board on the phone.
 
-- Deploy or update: `AWS_PROFILE=<profile> bash backend/deploy.sh` (needs the AWS CLI). It runs the
-  tests, deploys `template.yaml`, uploads the code, checks it answers, and prints the URL.
-- Put that URL in `js/config.js` as `scoresUrl`. Until then every board stays on the phone.
-- Tests: `node backend/test.mjs`.
+- A round posts its score and its elf hits in one request (`POST /v1/fruitcake/scores`).
 - Rounds played with no signal wait on the phone and post the next time the game opens.
 
 ## Files
@@ -61,15 +66,14 @@ family-wide MOST WANTED count. It serves every game, keyed by `game` in `js/conf
 | `js/elf.js` | One elf: pops up, walks or flies, gets splatted |
 | `js/cast.js` | The elves and sayings, who appears next, which voice clip to play |
 | `js/storage.js` | What the phone remembers: initials, its top 10 per level, hits, unsent rounds |
-| `js/online.js` | Talks to the family score service; queues rounds while offline |
+| `js/online.js` | Talks to the Shed service; queues rounds while offline |
 | `js/share.js` | Trash talk: the share sheet (or a text message), the score picture, dare links |
-| `js/config.js` | The score service's URL and the family code |
+| `js/config.js` | Where the game lives (for dare links) and the Shed service's address |
 | `js/textures.js` | Placeholder art drawn in code (elf bodies, hats, fruitcake, splat) |
 | `js/audio.js` | Placeholder sound effects, and the voice clips |
 | `js/scenes/` | Boot, Name (initials), Title, Play, Results, Board (high scores) |
 | `sw.js`, `manifest.webmanifest` | Offline play and installing as an app |
 | `amplify.yml` | How Amplify publishes a push |
-| `backend/` | The family score service (Lambda, DynamoDB, deploy script, tests) |
 | `tools/` | Makes the elves, the voices and the icons; the flick test |
 
 ## Changing things

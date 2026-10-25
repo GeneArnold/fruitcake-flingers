@@ -1,4 +1,4 @@
-// The family scoreboard online: sends finished rounds and reads the family boards.
+// The family scoreboard online, through the Shed service: sends finished rounds and reads the boards.
 // Rounds wait in the phone's outbox until they get through, so playing with no signal is fine.
 // With no scoresUrl configured everything here quietly does nothing and the boards stay local.
 import { CONFIG } from "./config.js";
@@ -17,10 +17,10 @@ async function call(path, body) {
     const res = await fetch(CONFIG.scoresUrl.replace(/\/$/, "") + path, {
       method: body ? "POST" : "GET",
       headers: body ? { "content-type": "application/json" } : undefined,
-      body: body ? JSON.stringify({ ...body, game: CONFIG.game, code: CONFIG.familyCode }) : undefined,
+      body: body ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
     return await res.json();
   } finally {
     clearTimeout(timer);
@@ -31,7 +31,7 @@ async function call(path, body) {
 export function postRound(levelId, score, hits) {
   if (!enabled()) return;
   const player = store.get("player");
-  const round = { level: levelId, score, hits, initials: player.initials, player: player.id, at: Date.now() };
+  const round = { board: levelId, score, counts: { hits }, initials: player.initials, player: player.id, at: Date.now() };
   store.set("outbox", [...store.get("outbox"), round].slice(-50));
   return flush();
 }
@@ -44,9 +44,11 @@ export function flush() {
     while (store.get("outbox").length) {
       const [round, ...rest] = store.get("outbox");
       try {
-        await call("/rounds", round);
-      } catch {
-        break; // offline or the service is down; try again next time
+        await call("/scores", round);
+      } catch (err) {
+        // The service turned this round down (4xx): sending it again won't help, so let it go.
+        // Anything else is no signal or the service being down: try again next time.
+        if (!(err.status >= 400 && err.status < 500 && err.status !== 429)) break;
       }
       store.set("outbox", rest);
       sent++;
@@ -60,7 +62,7 @@ export function flush() {
 export async function topScores(levelId, period = "all") {
   if (!enabled()) return null;
   try {
-    const q = new URLSearchParams({ game: CONFIG.game, level: levelId, period });
+    const q = new URLSearchParams({ board: levelId, period });
     return (await call(`/scores?${q}`)).scores;
   } catch {
     return null;
@@ -71,7 +73,7 @@ export async function topScores(levelId, period = "all") {
 export async function mostWanted() {
   if (!enabled()) return null;
   try {
-    return (await call(`/most-wanted?game=${CONFIG.game}`)).hits;
+    return (await call("/counters/hits")).counts;
   } catch {
     return null;
   }

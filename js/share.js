@@ -2,10 +2,13 @@
 // A challenge link opens the game on the same level with "Beat GEN's 4,250" at the top.
 import * as cast from "./cast.js";
 import * as store from "./storage.js";
+import { CONFIG } from "./config.js";
 
 // ?beat=GEN-4250-mall  (initials, score, level id)
+// Testing on a computer or the home network (plain http) keeps links pointing at that copy.
 export function challengeLink(initials, score, levelId) {
-  return `${location.origin}${location.pathname}?beat=${initials}-${score}-${levelId}`;
+  const home = location.protocol === "https:" && CONFIG.homeUrl ? CONFIG.homeUrl : location.origin + location.pathname;
+  return `${home}?beat=${initials}-${score}-${levelId}`;
 }
 
 // Reads a challenge from the address, keeps it until it is played, and tidies the address.

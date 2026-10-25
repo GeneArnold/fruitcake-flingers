@@ -1,9 +1,7 @@
 // Settings that change per deployment rather than per game version.
 export const CONFIG = {
-  game: "fruitcake",
-  // The family score service (backend/ in this project). null keeps every board on the phone.
-  scoresUrl: null,
-  // Sent with every score so random internet traffic can't post junk to the family board.
-  // Not a secret: anyone with the game has it. Must match FAMILY_CODE in the backend.
-  familyCode: "fruitcake-2026",
+  // Where the game lives. Dare links point here, even when shared from the amplifyapp.com address.
+  homeUrl: "https://fruitcake.thefunshed.com/",
+  // The Shed service, shared by every Fun Shed app (the shed repo). null keeps every board on the phone.
+  scoresUrl: "https://api.thefunshed.com/v1/fruitcake",
 };
