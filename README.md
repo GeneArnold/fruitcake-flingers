@@ -21,6 +21,8 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
 - **First time:** swipe in your three initials, arcade style (↑ ↓ change a letter, → next).
 - **Title:** swipe up to play, sideways to change level, down for the high scores.
   Tap your initials (top right) to change them.
+  QUIT (top left) closes the installed game on Android; on an iPhone it says to swipe it away,
+  and in a browser tab it goes to thefunshed.com.
 - **Play:** touch the bottom of the screen and flick the fruitcake at an elf. A slow or sideways
   flick does not count and does not use up a cake. A round is 10 fruitcakes.
   The pause button (top middle) stops the round, with KEEP PLAYING or QUIT; quitting doesn't

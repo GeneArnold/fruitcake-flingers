@@ -1,7 +1,7 @@
 // The title: swipe up to play, sideways to pick a level, down for the scoreboard.
 // Taps work too: the level card plays, the arrows change level, your initials change them.
 import * as audio from "../audio.js";
-import { install, installHint, onHintChange } from "../install.js";
+import { install, installHint, installed, onHintChange } from "../install.js";
 import * as store from "../storage.js";
 import { LEVELS, paintLevel } from "../levels.js";
 import { inside, listenForGestures } from "../gestures.js";
@@ -47,8 +47,10 @@ export class TitleScene extends Phaser.Scene {
       text(this, W / 2, 330, `YOUR BEST  ${best.toLocaleString()}`, 20, { color: "#cfd8ff", strokeThickness: 3 });
     }
     this.soundText = text(this, 22, 40, "", 18, { originX: 0, color: "#cfd8ff" });
-    this.soundArea = { x: 0, y: 0, w: 150, h: 90 };
+    this.soundArea = { x: 0, y: 0, w: 150, h: 62 };
     this.showSound();
+    text(this, 22, 82, "✕ QUIT", 18, { originX: 0, color: "#cfd8ff" });
+    this.quitArea = { x: 0, y: 62, w: 150, h: 50 };
 
     this.card = this.add.container(0, 0).setDepth(2);
     this.levelName = text(this, W / 2, CARD.y + CARD.h + 30, "", 30, { color: "#ffffff" }).setDepth(2);
@@ -75,6 +77,7 @@ export class TitleScene extends Phaser.Scene {
         if (inside(x, y, this.meArea)) this.scene.start("Name");
         else if (this.hint?.tap && inside(x, y, INSTALL)) install();
         else if (inside(x, y, this.soundArea)) this.toggleSound();
+        else if (inside(x, y, this.quitArea)) this.quit();
         else if (inside(x, y, CARD)) this.play();
         else if (y > CARD.y && y < CARD.y + CARD.h && x < CARD.x) this.changeLevel(-1);
         else if (y > CARD.y && y < CARD.y + CARD.h && x > CARD.x + CARD.w) this.changeLevel(1);
@@ -85,6 +88,20 @@ export class TitleScene extends Phaser.Scene {
   play() {
     audio.play("whoosh");
     this.scene.start("Play", { level: this.levelIndex });
+  }
+
+  // Installed, the game closes itself where the phone allows it (Android). Where it doesn't (iPhone),
+  // it says how. In a browser tab, quitting goes to the Fun Shed's home page.
+  quit() {
+    if (!installed()) {
+      location.href = "https://thefunshed.com/";
+      return;
+    }
+    window.close();
+    this.time.delayedCall(400, () => {
+      const howTo = text(this, W / 2, 380, "To close the game,\nswipe it away", 28).setDepth(5);
+      this.tweens.add({ targets: howTo, alpha: 0, delay: 2500, duration: 400, onComplete: () => howTo.destroy() });
+    });
   }
 
   changeLevel(step) {

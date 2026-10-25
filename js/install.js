@@ -14,7 +14,7 @@ window.addEventListener("appinstalled", () => {
   changed();
 });
 
-function installed() {
+export function installed() {
   return matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches || navigator.standalone === true;
 }
 
