@@ -1,6 +1,7 @@
 // The title: swipe up to play, sideways to pick a level, down for the scoreboard.
 // Taps work too: the level card plays, the arrows change level, your initials change them.
 import * as audio from "../audio.js";
+import { install, installHint, onHintChange } from "../install.js";
 import * as store from "../storage.js";
 import { LEVELS, paintLevel } from "../levels.js";
 import { inside, listenForGestures } from "../gestures.js";
@@ -9,6 +10,7 @@ import { H, W, nightSky, setupCamera, snowfall, text } from "../ui.js";
 const CARD_SCALE = 0.4;
 const CARD_Y = 548;
 const CARD = { x: (W - W * CARD_SCALE) / 2, y: CARD_Y - (H * CARD_SCALE) / 2, w: W * CARD_SCALE, h: H * CARD_SCALE };
+const INSTALL = { x: 40, y: 918, w: W - 80, h: 34 };
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
@@ -55,9 +57,13 @@ export class TitleScene extends Phaser.Scene {
     this.rightArrow = text(this, W - 44, CARD_Y, "›", 90, { color: "#ffe066" }).setDepth(2);
     this.drawCard();
 
-    const go = text(this, W / 2, 868, "SWIPE UP TO FLING", 34, { color: "#ffe066" });
+    const go = text(this, W / 2, 856, "SWIPE UP TO FLING", 34, { color: "#ffe066" });
     this.tweens.add({ targets: go, scale: 1.08, duration: 600, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
-    text(this, W / 2, 916, "swipe down for the high scores", 18, { color: "#cfd8ff", strokeThickness: 3 });
+    text(this, W / 2, 898, "swipe down for the high scores", 18, { color: "#cfd8ff", strokeThickness: 3 });
+    this.installBox = this.add.graphics();
+    this.installText = text(this, W / 2, INSTALL.y + INSTALL.h / 2, "", 17, { color: "#ffffff", strokeThickness: 3 });
+    this.showInstall();
+    onHintChange(() => this.scene.isActive() && this.showInstall());
 
     listenForGestures(this, {
       onSwipe: (dir) => {
@@ -67,6 +73,7 @@ export class TitleScene extends Phaser.Scene {
       },
       onTap: (x, y) => {
         if (inside(x, y, this.meArea)) this.scene.start("Name");
+        else if (this.hint?.tap && inside(x, y, INSTALL)) install();
         else if (inside(x, y, this.soundArea)) this.toggleSound();
         else if (inside(x, y, CARD)) this.play();
         else if (y > CARD.y && y < CARD.y + CARD.h && x < CARD.x) this.changeLevel(-1);
@@ -115,6 +122,16 @@ export class TitleScene extends Phaser.Scene {
     });
     this.leftArrow.setVisible(LEVELS.length > 1);
     this.rightArrow.setVisible(LEVELS.length > 1);
+  }
+
+  // "Install me", while the game is playing in a browser tab on a phone (js/install.js).
+  showInstall() {
+    this.hint = installHint();
+    this.installBox.clear();
+    this.installText.setText(this.hint?.words ?? "");
+    if (!this.hint) return;
+    this.installBox.fillStyle(this.hint.tap ? 0x2a9d8f : 0x000000, this.hint.tap ? 1 : 0.3);
+    this.installBox.fillRoundedRect(INSTALL.x, INSTALL.y, INSTALL.w, INSTALL.h, 17);
   }
 
   toggleSound() {

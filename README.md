@@ -67,6 +67,7 @@ The online high scores and the everyone-wide MOST WANTED count live in the **She
 | `js/cast.js` | The elves and sayings, who appears next, which voice clip to play |
 | `js/storage.js` | What the phone remembers: initials, its top 10 per level, hits, unsent rounds |
 | `js/online.js` | Talks to the Shed service; queues rounds while offline |
+| `js/install.js` | The title screen's "install me" hint, for phones playing in a browser tab |
 | `js/share.js` | Trash talk: the share sheet (or a text message), the score picture, dare links |
 | `js/config.js` | Where the game lives (for dare links) and the Shed service's address |
 | `js/textures.js` | Placeholder art drawn in code (elf bodies, hats, fruitcake, splat) |
