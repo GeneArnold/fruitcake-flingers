@@ -23,6 +23,8 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
   Tap your initials (top right) to change them.
 - **Play:** touch the bottom of the screen and flick the fruitcake at an elf. A slow or sideways
   flick does not count and does not use up a cake. A round is 10 fruitcakes.
+  The pause button (top middle) stops the round, with KEEP PLAYING or QUIT; quitting doesn't
+  count the round. Switching to another app pauses it too.
 - Hit two elves with one fruitcake for a combo (double points), right in the face for +50.
   Don't land a short throw on Grandma's good china.
 - **After a round:** swipe up to go again, down for the high scores, left (or tap TRASH TALK) to

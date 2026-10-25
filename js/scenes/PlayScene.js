@@ -5,6 +5,7 @@ import * as store from "../storage.js";
 import { Elf } from "../elf.js";
 import { aimAssist, readFlick } from "../flick.js";
 import { LEVELS, paintLevel } from "../levels.js";
+import { inside } from "../gestures.js";
 import { H, W, bubble, fingerAt, floatText, setupCamera, snowfall, text } from "../ui.js";
 
 const CAKES = 10;
@@ -13,6 +14,9 @@ const ZONE_TOP = 700;     // a flick starts anywhere below this line
 const THROW_LINE = 610;   // a finger dragged above this line throws straight away
 const CAKE_R = 30;        // the fruitcake's size for hitting things, before it shrinks with distance
 const FACE_BONUS = 50;
+const PAUSE = { x: W / 2 - 50, y: 0, w: 100, h: 92 };  // the pause button, in the middle of the top band
+const KEEP = { x: 90, y: 430, w: W - 180, h: 80 };
+const QUIT = { x: 90, y: 550, w: W - 180, h: 80 };
 
 // Within a round the game gets harder in three steps.
 function phaseFor(cake) {
@@ -46,6 +50,7 @@ export class PlayScene extends Phaser.Scene {
     this.finished = false;
     this.pointerId = null;
     this.path = [];
+    this.paused = null;
 
     this.makeHud();
     this.trail = this.add.graphics().setDepth(60);
@@ -53,6 +58,10 @@ export class PlayScene extends Phaser.Scene {
     this.cakeImg = this.add.image(PLATE.x, H + 80, "fruitcake").setDepth(45);
     this.hint = text(this, W / 2, 938, "flick the fruitcake at a face", 22, { strokeThickness: 4 }).setDepth(70);
     this.listen();
+    // Switching away from the game (a call, another app) pauses it.
+    const away = () => document.hidden && this.pause();
+    document.addEventListener("visibilitychange", away);
+    this.events.once("shutdown", () => document.removeEventListener("visibilitychange", away));
     this.drawDebug();
     this.newCake();
   }
@@ -68,6 +77,12 @@ export class PlayScene extends Phaser.Scene {
     this.levelText = text(this, 20, 70, this.level.name, 18, { originX: 0, color: "#ffffff", strokeThickness: 3 }).setDepth(70);
     this.cakeText = text(this, W - 20, 32, "", 26, { originX: 1 }).setDepth(70);
     this.windText = text(this, W - 20, 70, "", 18, { originX: 1, color: "#bfe3ff", strokeThickness: 3 }).setDepth(70);
+    const pause = this.add.graphics().setDepth(70);
+    pause.fillStyle(0x000000, 0.35);
+    pause.fillRoundedRect(W / 2 - 30, 16, 60, 60, 14);
+    pause.fillStyle(0xffffff, 0.9);
+    pause.fillRoundedRect(W / 2 - 13, 31, 9, 30, 3);
+    pause.fillRoundedRect(W / 2 + 4, 31, 9, 30, 3);
     if (this.challenge) {
       const c = this.challenge;
       this.levelText.setText(`BEAT ${c.initials}'S ${c.score.toLocaleString()}`).setColor("#7CFC9A");
@@ -80,6 +95,45 @@ export class PlayScene extends Phaser.Scene {
     const strength = Math.min(3, Math.ceil(Math.abs(this.wind) / 60));
     const arrows = (this.wind < 0 ? "←" : "→").repeat(strength);
     this.windText.setText(strength ? `WIND ${arrows}` : "NO WIND");
+  }
+
+  // Paused: everything stops, with a choice to keep playing or quit to the title. Quitting drops the
+  // round, so nothing is scored or posted.
+  pause() {
+    if (this.paused || this.finished) return;
+    this.pointerId = null;
+    this.path = [];
+    this.trail.clear();
+    if (!this.flight && this.ready) this.cakeImg.setPosition(PLATE.x, PLATE.y);
+    this.tweens.pauseAll();
+    this.time.paused = true;
+    const dim = this.add.graphics();
+    dim.fillStyle(0x000000, 0.6);
+    dim.fillRect(0, 0, W, H);
+    const button = (r, colour) => {
+      dim.fillStyle(colour, 1);
+      dim.fillRoundedRect(r.x, r.y, r.w, r.h, 20);
+    };
+    button(KEEP, 0x2e9e5b);
+    button(QUIT, 0x9c3b26);
+    this.paused = this.add.container(0, 0, [
+      dim,
+      text(this, W / 2, 330, "PAUSED", 60, { color: "#ffe066" }),
+      text(this, W / 2, KEEP.y + KEEP.h / 2, "KEEP PLAYING", 32),
+      text(this, W / 2, QUIT.y + QUIT.h / 2, "QUIT", 32),
+      text(this, W / 2, QUIT.y + QUIT.h + 34, "quitting doesn't count this round", 18, { color: "#cfd8ff", strokeThickness: 3 }),
+    ]).setDepth(100);
+  }
+
+  tapWhilePaused(at) {
+    if (inside(at.x, at.y, QUIT)) {
+      this.scene.start("Title");
+    } else if (inside(at.x, at.y, KEEP)) {
+      this.paused.destroy();
+      this.paused = null;
+      this.tweens.resumeAll();
+      this.time.paused = false;
+    }
   }
 
   // With ?debug in the address, every spot and prop is outlined, to help line them up with art.
@@ -122,6 +176,8 @@ export class PlayScene extends Phaser.Scene {
     this.input.on("pointerdown", (p) => {
       audio.unlock();
       const at = fingerAt(this, p);
+      if (this.paused) return this.tapWhilePaused(at);
+      if (inside(at.x, at.y, PAUSE)) return this.pause();
       if (!this.ready || this.pointerId !== null || at.y < ZONE_TOP) return;
       this.pointerId = p.id;
       this.path = [at];
@@ -202,6 +258,7 @@ export class PlayScene extends Phaser.Scene {
   // The loop
 
   update(time, delta) {
+    if (this.paused) return;
     const dt = Math.min(0.05, delta / 1000);
     if (!this.finished) this.spawn(dt);
     for (const e of this.elves) e.update(dt);
