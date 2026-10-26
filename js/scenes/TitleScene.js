@@ -3,6 +3,7 @@
 import * as audio from "../audio.js";
 import { install, installHint, installed, onHintChange } from "../install.js";
 import * as store from "../storage.js";
+import { checkForUpdate, update, versionLabel } from "../update.js";
 import { LEVELS, paintLevel } from "../levels.js";
 import { inside, listenForGestures } from "../gestures.js";
 import { H, W, nightSky, setupCamera, snowfall, text } from "../ui.js";
@@ -10,7 +11,8 @@ import { H, W, nightSky, setupCamera, snowfall, text } from "../ui.js";
 const CARD_SCALE = 0.4;
 const CARD_Y = 548;
 const CARD = { x: (W - W * CARD_SCALE) / 2, y: CARD_Y - (H * CARD_SCALE) / 2, w: W * CARD_SCALE, h: H * CARD_SCALE };
-const INSTALL = { x: 40, y: 918, w: W - 80, h: 34 };
+const INSTALL = { x: 40, y: 906, w: W - 80, h: 34 };  // the install hint, or the update button
+const VERSION_AREA = { x: 60, y: 940, w: W - 120, h: 20 };
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
@@ -61,11 +63,17 @@ export class TitleScene extends Phaser.Scene {
 
     const go = text(this, W / 2, 856, "SWIPE UP TO FLING", 34, { color: "#ffe066" });
     this.tweens.add({ targets: go, scale: 1.08, duration: 600, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
-    text(this, W / 2, 898, "swipe down for the high scores", 18, { color: "#cfd8ff", strokeThickness: 3 });
+    text(this, W / 2, 886, "swipe down for the high scores", 18, { color: "#cfd8ff", strokeThickness: 3 });
     this.installBox = this.add.graphics();
     this.installText = text(this, W / 2, INSTALL.y + INSTALL.h / 2, "", 17, { color: "#ffffff", strokeThickness: 3 });
+    this.versionText = text(this, W / 2, 951, versionLabel(), 12, { color: "#8f9cc8", strokeThickness: 2 });
     this.showInstall();
     onHintChange(() => this.scene.isActive() && this.showInstall());
+    this.lookForUpdate(false);
+    // Coming back to the game from another app checks again: a phone often keeps the game open for days.
+    const back = () => !document.hidden && this.lookForUpdate(false);
+    document.addEventListener("visibilitychange", back);
+    this.events.once("shutdown", () => document.removeEventListener("visibilitychange", back));
 
     listenForGestures(this, {
       onSwipe: (dir) => {
@@ -75,7 +83,9 @@ export class TitleScene extends Phaser.Scene {
       },
       onTap: (x, y) => {
         if (inside(x, y, this.meArea)) this.scene.start("Name");
+        else if (this.hint?.update && inside(x, y, INSTALL)) this.runUpdate();
         else if (this.hint?.tap && inside(x, y, INSTALL)) install();
+        else if (inside(x, y, VERSION_AREA)) this.lookForUpdate(true);
         else if (inside(x, y, this.soundArea)) this.toggleSound();
         else if (inside(x, y, this.quitArea)) this.quit();
         else if (inside(x, y, CARD)) this.play();
@@ -141,13 +151,34 @@ export class TitleScene extends Phaser.Scene {
     this.rightArrow.setVisible(LEVELS.length > 1);
   }
 
-  // "Install me", while the game is playing in a browser tab on a phone (js/install.js).
+  // Asks the site whether a newer release is out; if so, the update button replaces the install hint.
+  // `asked` is a tap on the version: then it also says when there's nothing new.
+  async lookForUpdate(asked) {
+    if (asked) this.versionText.setText("checking for an update…");
+    const newer = await checkForUpdate();
+    if (!this.scene.isActive()) return;
+    this.updateReady = newer === true;
+    this.showInstall();
+    if (!asked) return;
+    const answer = newer === null ? "couldn't check (no signal?)" : newer ? "an update is ready" : "you have the latest version ✓";
+    this.versionText.setText(answer);
+    this.time.delayedCall(2500, () => this.versionText.setText(versionLabel()));
+  }
+
+  runUpdate() {
+    this.installText.setText("⏳ UPDATING…");
+    this.hint = null;
+    update();
+  }
+
+  // "Install me", while the game is playing in a browser tab on a phone (js/install.js), or the
+  // update button when a newer release is out.
   showInstall() {
-    this.hint = installHint();
+    this.hint = this.updateReady ? { words: "⬆ NEW VERSION! TAP TO UPDATE", tap: true, update: true } : installHint();
     this.installBox.clear();
     this.installText.setText(this.hint?.words ?? "");
     if (!this.hint) return;
-    this.installBox.fillStyle(this.hint.tap ? 0x2a9d8f : 0x000000, this.hint.tap ? 1 : 0.3);
+    this.installBox.fillStyle(this.hint.update ? 0xe07a1f : this.hint.tap ? 0x2a9d8f : 0x000000, this.hint.tap ? 1 : 0.3);
     this.installBox.fillRoundedRect(INSTALL.x, INSTALL.y, INSTALL.w, INSTALL.h, 17);
   }
 

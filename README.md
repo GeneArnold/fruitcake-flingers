@@ -44,8 +44,13 @@ Everything online (Amplify and the score service) lives in the **Entertainment**
 member of the Gene Arnold Consulting organization, so it stays separate from Ask Bento and other products.
 
 The game is hosted on Amplify, connected to the GitHub repo: **every push to `main` is a release.**
-`amplify.yml` copies the game's files and stamps the commit into `sw.js`, so phones that installed
-the game pick up the new version on their next visit. Nothing to bump by hand.
+`amplify.yml` copies the game's files and stamps the release into `sw.js`, `js/version.js` and
+`version.json`. Nothing to bump by hand.
+
+Installed phones: the bottom of the title screen shows the version (the release's date and time).
+The game asks the site for `version.json` when the title screen opens and whenever the game comes
+back to the front; if a newer release is out, an orange **NEW VERSION! TAP TO UPDATE** button
+appears, which throws away the stored copy and reloads. Tapping the version checks on demand.
 
 ## The family score board
 
@@ -71,6 +76,7 @@ The online high scores and the everyone-wide MOST WANTED count live in the **She
 | `js/cast.js` | The elves and sayings, who appears next, which voice clip to play |
 | `js/storage.js` | What the phone remembers: initials, its top 10 per level, hits, unsent rounds |
 | `js/online.js` | Talks to the Shed service; queues rounds while offline |
+| `js/update.js`, `js/version.js` | The version on the title screen, the check for a newer release, the update button |
 | `js/install.js` | The title screen's "install me" hint, for phones playing in a browser tab |
 | `js/share.js` | Trash talk: the share sheet (or a text message), the score picture, dare links |
 | `js/config.js` | Where the game lives (for dare links) and the Shed service's address |
