@@ -32,6 +32,8 @@ export class PlayScene extends Phaser.Scene {
 
   create(data) {
     setupCamera(this);
+    this.tweens.resumeAll();
+    this.time.paused = false;
     this.levelIndex = data.level ?? 0;
     this.level = LEVELS[this.levelIndex];
     const challenge = store.get("challenge");
@@ -127,6 +129,8 @@ export class PlayScene extends Phaser.Scene {
 
   tapWhilePaused(at) {
     if (inside(at.x, at.y, QUIT)) {
+      this.tweens.resumeAll(); // Phaser keeps a scene's clock and tweens paused into its next start
+      this.time.paused = false;
       this.scene.start("Title");
     } else if (inside(at.x, at.y, KEEP)) {
       this.paused.destroy();
