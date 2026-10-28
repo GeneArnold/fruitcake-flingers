@@ -33,8 +33,8 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
   The pause button (top middle) stops the game, with KEEP PLAYING or QUIT; quitting doesn't
   count the game. Switching to another app pauses it too.
 - Hit two elves with one fruitcake for a combo (double points), right in the face for +50.
-- **After a game:** swipe up to play again, down for the high scores, left (or tap TRASH TALK) to
-  text your score with a dare link, right for the menu.
+- **After a game:** PLAY AGAIN, or TRASH TALK to text your score with a dare link; "menu" goes
+  back to the title. The score goes on the family board by itself.
 - **High scores:** the top 10 games (board `game`, here and on the family board), then MOST
   WANTED, the elves hit most. Swipe sideways.
 - **Dares:** a shared link like `…/?beat=GEN-4250-game` puts "GEN DARES YOU: BEAT 4,250" on the

@@ -1,17 +1,18 @@
 // After a game: the score, how far it got, where it landed on the board, a dare's outcome, and the
-// elves splatted. Swipe up to play again, down for the high scores, right for the menu; swipe left or tap
-// TRASH TALK to text the score to someone. With the family board online, the first swipe up
-// posts the score there instead (swipe down skips).
+// elves splatted. Two buttons: PLAY AGAIN, and TRASH TALK to text the score to someone; a small
+// "menu" goes back to the title. The score goes to the family board by itself.
 import * as audio from "../audio.js";
 import * as cast from "../cast.js";
 import * as online from "../online.js";
 import * as store from "../storage.js";
 import { shareRound, snapshot } from "../share.js";
 import { LEVELS } from "../levels.js";
-import { listenForGestures } from "../gestures.js";
+import { inside, listenForGestures } from "../gestures.js";
 import { W, face, nightSky, setupCamera, snowfall, text } from "../ui.js";
 
-const SHARE = { x: W / 2 - 130, y: 770, w: 260, h: 64 };
+const PLAY = { x: W / 2 - 160, y: 752, w: 320, h: 72 };
+const SHARE = { x: W / 2 - 160, y: 840, w: 320, h: 64 };
+const MENU = { x: W / 2 - 80, y: 912, w: 160, h: 44 };
 
 export class ResultsScene extends Phaser.Scene {
   constructor() {
@@ -61,43 +62,36 @@ export class ResultsScene extends Phaser.Scene {
 
     this.showSplatted(hits, bestCombo);
 
-    const pill = this.add.graphics();
-    pill.fillStyle(0xe63946);
-    pill.fillRoundedRect(SHARE.x, SHARE.y, SHARE.w, SHARE.h, 32);
+    const buttons = this.add.graphics();
+    buttons.fillStyle(0x2e9e5b);
+    buttons.fillRoundedRect(PLAY.x, PLAY.y, PLAY.w, PLAY.h, 36);
+    buttons.fillStyle(0xe63946);
+    buttons.fillRoundedRect(SHARE.x, SHARE.y, SHARE.w, SHARE.h, 32);
+    text(this, W / 2, PLAY.y + PLAY.h / 2, "▶ PLAY AGAIN", 34);
     this.shareText = text(this, W / 2, SHARE.y + SHARE.h / 2, "📣 TRASH TALK", 28);
-    this.hintBig = text(this, W / 2, 870, "", 30, { color: "#ffe066" });
-    this.hintSmall = text(this, W / 2, 914, "", 17, { color: "#cfd8ff", strokeThickness: 3 });
-    this.asking = online.enabled() && score > 0; // offer to post to the family board first
-    this.showHints();
+    text(this, W / 2, MENU.y + MENU.h / 2, "menu", 20, { color: "#cfd8ff", strokeThickness: 3 });
+    this.posted = text(this, W / 2, 316, "", 16, { color: "#cfd8ff", strokeThickness: 3 });
+    if (online.enabled() && score > 0) this.post();
 
     // The share picture is this screen, taken once the score has finished counting up.
-    this.time.delayedCall(countUp + 150, () => {
-      this.hintBig.setVisible(false);
-      this.hintSmall.setVisible(false);
-      snapshot(this.game).then((png) => {
-        this.picture = png;
-        this.hintBig.setVisible(true);
-        this.hintSmall.setVisible(true);
-      });
-    });
+    this.time.delayedCall(countUp + 150, () => snapshot(this.game).then((png) => (this.picture = png)));
 
     listenForGestures(this, {
       lockMs: 900,
       onSwipe: (dir) => {
-        if (this.asking) {
-          if (dir === "up") this.post();
-          else if (dir === "down") this.skipPost();
-          return;
-        }
-        if (dir === "up") this.scene.start("Play", { level: 0 });
-        else if (dir === "down") this.scene.start("Board");
-        else if (dir === "left") this.share();
-        else this.scene.start("Title");
+        if (dir === "up") this.playAgain();
       },
       onTap: (x, y) => {
-        if (x > SHARE.x && x < SHARE.x + SHARE.w && y > SHARE.y && y < SHARE.y + SHARE.h) this.share();
+        if (inside(x, y, PLAY)) this.playAgain();
+        else if (inside(x, y, SHARE)) this.share();
+        else if (inside(x, y, MENU)) this.scene.start("Title");
       },
     });
+  }
+
+  playAgain() {
+    audio.play("whoosh");
+    this.scene.start("Play", { level: 0 });
   }
 
   showSplatted(hits, bestCombo) {
@@ -123,31 +117,13 @@ export class ResultsScene extends Phaser.Scene {
     if (bestCombo > 1) text(this, W / 2, 724, "Two in one throw: COMBO!", 22, { color: "#7CFC9A", strokeThickness: 4 });
   }
 
-  showHints() {
-    if (this.asking) {
-      this.hintBig.setText("SWIPE UP: POST TO THE FAMILY BOARD").setFontSize(24);
-      this.hintSmall.setText("swipe down to skip");
-    } else {
-      this.hintBig.setText("SWIPE UP TO PLAY AGAIN").setFontSize(30);
-      this.hintSmall.setText("↓ high scores   ← trash talk   → menu");
-    }
-  }
-
+  // Sends the score to the family board; with no signal it waits on the phone for next time.
   async post() {
-    this.asking = false;
-    this.hintBig.setText("Posting...");
     const { score, hits } = this.round;
     await online.postRound(store.GAME_BOARD, score, hits);
+    if (!this.scene.isActive()) return;
     const waiting = store.get("outbox").length > 0;
-    audio.play(waiting ? "pop" : "cheer");
-    this.showHints();
-    this.hintSmall.setText(waiting ? "no signal: it'll post next time you play" : "posted to the family board!");
-    this.time.delayedCall(2200, () => this.scene.isActive() && this.showHints());
-  }
-
-  skipPost() {
-    this.asking = false;
-    this.showHints();
+    this.posted.setText(waiting ? "no signal: it'll go on the family board next time" : "on the family board ✓");
   }
 
   async share() {
