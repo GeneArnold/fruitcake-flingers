@@ -3,7 +3,7 @@ import * as cast from "../cast.js";
 import * as online from "../online.js";
 import * as store from "../storage.js";
 import { readChallenge } from "../share.js";
-import { LEVELS, levelPictures } from "../levels.js";
+import { levelPictures } from "../levels.js";
 import { PICTURES, makeTextures } from "../textures.js";
 import { H, W, setupCamera, text } from "../ui.js";
 
@@ -37,7 +37,7 @@ export class BootScene extends Phaser.Scene {
   create() {
     cast.setData(this.cache.json.get("elves"), this.cache.json.get("sayings"));
     makeTextures(this);
-    readChallenge(LEVELS.map((l) => l.id));
+    readChallenge();
     online.flush(); // rounds played offline last time
     this.scene.start(store.get("player") ? "Title" : "Name");
   }

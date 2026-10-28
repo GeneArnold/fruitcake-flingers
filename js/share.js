@@ -1,23 +1,23 @@
 // Trash talk: share a round by text, with a picture of the results and a challenge link.
-// A challenge link opens the game on the same level with "Beat GEN's 4,250" at the top.
+// A challenge link opens the game with "GEN DARES YOU: BEAT 4,250" on the title screen.
 import * as cast from "./cast.js";
 import * as store from "./storage.js";
 import { CONFIG } from "./config.js";
 
-// ?beat=GEN-4250-mall  (initials, score, level id)
+// ?beat=GEN-4250-game  (initials, score, board; older links name a level, which no longer matters)
 // Testing on a computer or the home network (plain http) keeps links pointing at that copy.
-export function challengeLink(initials, score, levelId) {
+export function challengeLink(initials, score, board) {
   const home = location.protocol === "https:" && CONFIG.homeUrl ? CONFIG.homeUrl : location.origin + location.pathname;
-  return `${home}?beat=${initials}-${score}-${levelId}`;
+  return `${home}?beat=${initials}-${score}-${board}`;
 }
 
 // Reads a challenge from the address, keeps it until it is played, and tidies the address.
-export function readChallenge(levelIds) {
+export function readChallenge() {
   const params = new URLSearchParams(location.search);
   const beat = params.get("beat");
   if (!beat) return;
   const m = /^([A-Z]{1,3})-(\d{1,7})-([a-z0-9-]+)$/.exec(beat);
-  if (m && levelIds.includes(m[3])) store.set("challenge", { initials: m[1], score: Number(m[2]), level: m[3] });
+  if (m) store.set("challenge", { initials: m[1], score: Number(m[2]) });
   params.delete("beat");
   const rest = params.toString();
   history.replaceState(history.state, "", location.pathname + (rest ? `?${rest}` : ""));
@@ -32,13 +32,13 @@ function trashTalk(round) {
     .replaceAll("{level}", round.levelName);
 }
 
-// round: { score, levelId, levelName, elfName, elfHits, picture (a PNG Blob or null) }
+// round: { score, levelName (the level the game got to), elfName, elfHits, picture (a PNG Blob or null) }
 // → "shared", "texted" (fell back to a text message), or "cancelled"
 export async function shareRound(round) {
   const me = store.get("player");
-  const lines = [trashTalk(round), `${me.initials} flung ${round.score.toLocaleString()} on ${round.levelName}.`];
+  const lines = [trashTalk(round), `${me.initials} flung ${round.score.toLocaleString()} and made it to ${round.levelName}.`];
   if (round.elfName && round.elfHits) lines.push(`${round.elfName} got splatted ${round.elfHits}×.`);
-  const url = challengeLink(me.initials, round.score, round.levelId);
+  const url = challengeLink(me.initials, round.score, store.GAME_BOARD);
   const text = `${lines.join(" ")}\nBeat that 👉`;
 
   if (navigator.share) {

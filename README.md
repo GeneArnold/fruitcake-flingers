@@ -19,21 +19,27 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
 ## How to play
 
 - **First time:** swipe in your three initials, arcade style (↑ ↓ change a letter, → next).
-- **Title:** swipe up to play, sideways to change level, down for the high scores.
+- **Title:** swipe up (or tap the picture) to play, down for the high scores.
   Tap your initials (top right) to change them.
   QUIT (top left) closes the installed game on Android; on an iPhone it says to swipe it away,
   and in a browser tab it goes to thefunshed.com.
+- **A game** runs through the six levels in order, from the Front Yard to Christmas Morning. Each
+  level gives you 10 fruitcakes and has a **goal** (600 points on the first, more on each one
+  after; `goal` in `js/levels.js`). Make the goal and the next level starts by itself, with the
+  score carrying on; miss it and it's GAME OVER. Clear all six to win.
 - **Play:** touch the bottom of the screen and flick the fruitcake at an elf. A slow or sideways
-  flick does not count and does not use up a cake. A round is 10 fruitcakes.
-  The pause button (top middle) stops the round, with KEEP PLAYING or QUIT; quitting doesn't
-  count the round. Switching to another app pauses it too.
+  flick does not count and does not use up a cake. The top left shows the score and how close
+  you are to the level's goal.
+  The pause button (top middle) stops the game, with KEEP PLAYING or QUIT; quitting doesn't
+  count the game. Switching to another app pauses it too.
 - Hit two elves with one fruitcake for a combo (double points), right in the face for +50.
   Don't land a short throw on Grandma's good china.
-- **After a round:** swipe up to go again, down for the high scores, left (or tap TRASH TALK) to
+- **After a game:** swipe up to play again, down for the high scores, left (or tap TRASH TALK) to
   text your score with a dare link, right for the menu.
-- **High scores:** a top 10 per level, then MOST WANTED, the elves hit most. Swipe sideways.
-- **Dares:** a shared link like `…/?beat=GEN-4250-mall` opens that level with
-  "GEN DARES YOU: BEAT 4,250", and the results say who won.
+- **High scores:** the top 10 games (board `game`, here and on the family board), then MOST
+  WANTED, the elves hit most. Swipe sideways.
+- **Dares:** a shared link like `…/?beat=GEN-4250-game` puts "GEN DARES YOU: BEAT 4,250" on the
+  title, and the results say who won.
 
 ## Releasing
 
@@ -75,7 +81,7 @@ The online high scores and the everyone-wide MOST WANTED count live in the **She
 | `js/flick.js` | Turns a swipe into a throw (tested by `node tools/test-flick.mjs`) |
 | `js/elf.js` | One elf: pops up, walks or flies, gets splatted |
 | `js/cast.js` | The elves and sayings, who appears next, which voice clip to play |
-| `js/storage.js` | What the phone remembers: initials, its top 10 per level, hits, unsent rounds |
+| `js/storage.js` | What the phone remembers: initials, its top 10 games, hits, unsent games |
 | `js/online.js` | Talks to the Shed service; queues rounds while offline |
 | `js/update.js`, `js/version.js` | The version on the title screen, the check for a newer release, the update button |
 | `js/install.js` | The title screen's "install me" hint, for phones playing in a browser tab |

@@ -1,5 +1,5 @@
-// After a round: the score, where it landed on the board, a dare's outcome, and the elves splatted.
-// Swipe up to fling again, down for the high scores, right for the menu; swipe left or tap
+// After a game: the score, how far it got, where it landed on the board, a dare's outcome, and the
+// elves splatted. Swipe up to play again, down for the high scores, right for the menu; swipe left or tap
 // TRASH TALK to text the score to someone. With the family board online, the first swipe up
 // posts the score there instead (swipe down skips).
 import * as audio from "../audio.js";
@@ -18,16 +18,17 @@ export class ResultsScene extends Phaser.Scene {
     super("Results");
   }
 
-  create({ level, score, hits, bestCombo, rank, previousTop, challenge }) {
+  create({ level, allClear, score, hits, bestCombo, rank, previousTop, challenge }) {
     setupCamera(this);
     nightSky(this);
     snowfall(this, 1);
     this.level = LEVELS[level];
-    this.round = { level, score, hits };
+    this.round = { score, hits };
     const me = store.get("player");
 
-    text(this, W / 2, 70, "ROUND OVER", 48, { color: "#ffe066" });
-    text(this, W / 2, 116, `${me.initials} · ${this.level.name}`, 22, { color: "#cfd8ff", strokeThickness: 3 });
+    text(this, W / 2, 70, allClear ? "ALL LEVELS CLEAR!" : "GAME OVER", 48, { color: allClear ? "#7CFC9A" : "#ffe066" });
+    const reached = allClear ? "beat all " + LEVELS.length + " levels" : `made it to level ${level + 1}: ${this.level.name}`;
+    text(this, W / 2, 116, `${me.initials} ${reached}`, 22, { color: "#cfd8ff", strokeThickness: 3 });
     const scoreText = text(this, W / 2, 200, "0", 92, { color: "#ffffff" });
     const countUp = Math.min(1200, 200 + score / 4);
     this.tweens.addCounter({
@@ -88,8 +89,8 @@ export class ResultsScene extends Phaser.Scene {
           else if (dir === "down") this.skipPost();
           return;
         }
-        if (dir === "up") this.scene.start("Play", { level });
-        else if (dir === "down") this.scene.start("Board", { level });
+        if (dir === "up") this.scene.start("Play", { level: 0 });
+        else if (dir === "down") this.scene.start("Board");
         else if (dir === "left") this.share();
         else this.scene.start("Title");
       },
@@ -127,7 +128,7 @@ export class ResultsScene extends Phaser.Scene {
       this.hintBig.setText("SWIPE UP: POST TO THE FAMILY BOARD").setFontSize(24);
       this.hintSmall.setText("swipe down to skip");
     } else {
-      this.hintBig.setText("SWIPE UP TO FLING AGAIN").setFontSize(30);
+      this.hintBig.setText("SWIPE UP TO PLAY AGAIN").setFontSize(30);
       this.hintSmall.setText("↓ high scores   ← trash talk   → menu");
     }
   }
@@ -136,7 +137,7 @@ export class ResultsScene extends Phaser.Scene {
     this.asking = false;
     this.hintBig.setText("Posting...");
     const { score, hits } = this.round;
-    await online.postRound(this.level.id, score, hits);
+    await online.postRound(store.GAME_BOARD, score, hits);
     const waiting = store.get("outbox").length > 0;
     audio.play(waiting ? "pop" : "cheer");
     this.showHints();
@@ -153,7 +154,7 @@ export class ResultsScene extends Phaser.Scene {
     audio.play("pop");
     const { score } = this.round;
     const outcome = await shareRound({
-      score, levelId: this.level.id, levelName: this.level.name,
+      score, levelName: this.level.name,
       elfName: this.mostHit?.e.name, elfHits: this.mostHit?.n, picture: this.picture || null,
     });
     if (outcome !== "cancelled") this.shareText.setText("📣 SENT! AGAIN?");

@@ -1,15 +1,15 @@
-// The high scores, arcade style: a top 10 for every level, then MOST WANTED (the elves hit most).
+// The high scores, arcade style: the top 10 games, then MOST WANTED (the elves hit most).
 // Swipe sideways to flip pages; swipe up or down, or tap, to go back. With the family board online
 // the pages show the whole family; otherwise they show this phone.
 import * as audio from "../audio.js";
 import * as cast from "../cast.js";
 import * as online from "../online.js";
 import * as store from "../storage.js";
-import { LEVELS } from "../levels.js";
 import { listenForGestures } from "../gestures.js";
 import { H, W, face, nightSky, setupCamera, text } from "../ui.js";
 
-const MOST_WANTED = LEVELS.length; // the page after the last level
+const PAGES = 2;
+const MOST_WANTED = 1; // the page after the high scores
 const MEDALS = ["#ffd700", "#d9e1ea", "#e0995e"];
 
 export class BoardScene extends Phaser.Scene {
@@ -17,10 +17,10 @@ export class BoardScene extends Phaser.Scene {
     super("Board");
   }
 
-  create({ level = 0 } = {}) {
+  create() {
     setupCamera(this);
     nightSky(this);
-    this.page = level;
+    this.page = 0;
     this.content = this.add.container(0, 0);
     this.dots = this.add.graphics();
     text(this, W / 2, H - 34, "swipe sideways for more · up or down to go back", 17, { color: "#cfd8ff", strokeThickness: 3 });
@@ -36,8 +36,7 @@ export class BoardScene extends Phaser.Scene {
   }
 
   flip(step) {
-    const pages = LEVELS.length + 1;
-    this.page = (this.page + step + pages) % pages;
+    this.page = (this.page + step + PAGES) % PAGES;
     audio.play("pop");
     this.showPage();
     this.content.x = step * 60;
@@ -58,13 +57,12 @@ export class BoardScene extends Phaser.Scene {
       }
       return;
     }
-    const level = LEVELS[page];
-    this.drawScores(level, store.board(level.id), "THIS PHONE");
-    const family = await online.topScores(level.id);
-    // Until anyone has posted on this level, the phone's own board is more fun than an empty one.
+    this.drawScores(store.board(), "THIS PHONE");
+    const family = await online.topScores(store.GAME_BOARD);
+    // Until anyone has posted, the phone's own board is more fun than an empty one.
     if (family?.length && this.page === page && this.scene.isActive()) {
       this.content.removeAll(true);
-      this.drawScores(level, family, "THE WHOLE FAMILY");
+      this.drawScores(family, "THE WHOLE FAMILY");
     }
   }
 
@@ -74,11 +72,10 @@ export class BoardScene extends Phaser.Scene {
     return obj;
   }
 
-  drawScores(level, rows, whose) {
+  drawScores(rows, whose) {
     const me = store.get("player");
-    this.put(text(this, W / 2, 66, "HIGH SCORES", 50, { color: "#ffe066" }));
-    this.put(text(this, W / 2, 118, level.name, 28));
-    this.put(text(this, W / 2, 152, whose, 16, { color: "#cfd8ff", strokeThickness: 3 }));
+    this.put(text(this, W / 2, 80, "HIGH SCORES", 56, { color: "#ffe066" }));
+    this.put(text(this, W / 2, 140, whose, 16, { color: "#cfd8ff", strokeThickness: 3 }));
     if (rows.length === 0) {
       this.put(text(this, W / 2, 440, "Nobody yet.\nBe the first!", 36, { color: "#ffffff" }));
       return;
@@ -128,10 +125,9 @@ export class BoardScene extends Phaser.Scene {
 
   drawDots() {
     this.dots.clear();
-    const pages = LEVELS.length + 1;
     const gap = 20;
-    const x0 = W / 2 - ((pages - 1) * gap) / 2;
-    for (let i = 0; i < pages; i++) {
+    const x0 = W / 2 - ((PAGES - 1) * gap) / 2;
+    for (let i = 0; i < PAGES; i++) {
       this.dots.fillStyle(i === this.page ? (i === MOST_WANTED ? 0xff6b6b : 0xffe066) : 0x5a6aa0);
       this.dots.fillCircle(x0 + i * gap, H - 70, 6);
     }

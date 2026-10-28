@@ -2,16 +2,18 @@
 // The browser may clear it (clearing site data, or uninstalling the app); that only costs scores.
 const KEY = "fruitcake.v2";
 const BOARD_SIZE = 10;
+// A game runs through every level, so there is one board, under this name (here and online).
+// Boards named after levels are from before, when each level was played on its own.
+export const GAME_BOARD = "game";
 
 const DEFAULTS = {
   player: null,    // { id, initials }: who plays on this phone; id tells two "BOB"s apart online
   sound: true,
-  level: 0,        // the level last chosen on the title screen
-  boards: {},      // level id → this phone's top 10, [{ initials, score, at }], best first
+  boards: {},      // board name → this phone's top 10, [{ initials, score, at }], best first
   hits: {},        // elf id → times hit on this phone
   rounds: 0,
   outbox: [],      // finished rounds waiting to be sent to the family board
-  challenge: null, // { initials, score, level } from a challenge link, until it is played
+  challenge: null, // { initials, score } from a challenge link, until it is played
 };
 
 let cache = null;
@@ -53,26 +55,26 @@ function randomId() {
   return crypto.randomUUID?.() || Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-export function board(levelId) {
-  return load().boards[levelId] || [];
+export function board(name = GAME_BOARD) {
+  return load().boards[name] || [];
 }
 
-// This phone's best round on any level.
+// This phone's best game.
 export function topScore() {
-  return Math.max(0, ...Object.values(load().boards).flat().map((r) => r.score));
+  return Math.max(0, ...board().map((r) => r.score));
 }
 
-// Saves a finished round on this phone's board. → { rank (1-10, or 0 if it missed the board),
-// previousTop (this phone's best before this round, on any level) }
-export function recordRound(levelId, score, hits) {
+// Saves a finished game on this phone's board. → { rank (1-10, or 0 if it missed the board),
+// previousTop (this phone's best before this game) }
+export function recordRound(boardName, score, hits) {
   const data = load();
   const previousTop = topScore();
   const entry = { initials: data.player.initials, score, at: Date.now() };
   // A round that scored nothing stays off the board.
   const list = score > 0
-    ? [...board(levelId), entry].sort((a, b) => b.score - a.score || a.at - b.at).slice(0, BOARD_SIZE)
-    : board(levelId);
-  data.boards[levelId] = list;
+    ? [...board(boardName), entry].sort((a, b) => b.score - a.score || a.at - b.at).slice(0, BOARD_SIZE)
+    : board(boardName);
+  data.boards[boardName] = list;
   for (const [id, n] of Object.entries(hits)) data.hits[id] = (data.hits[id] || 0) + n;
   data.rounds++;
   persist();

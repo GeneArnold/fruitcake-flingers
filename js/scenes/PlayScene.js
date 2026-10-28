@@ -1,4 +1,5 @@
-// A round: ten fruitcakes flicked at elves popping up around the level.
+// One level of a game: ten fruitcakes flicked at elves popping up around it. A game runs through the
+// levels in order, the score carrying on; reach the level's goal to go on, or the game is over.
 import * as audio from "../audio.js";
 import * as cast from "../cast.js";
 import * as store from "../storage.js";
@@ -36,16 +37,19 @@ export class PlayScene extends Phaser.Scene {
     this.time.paused = false;
     this.levelIndex = data.level ?? 0;
     this.level = LEVELS[this.levelIndex];
-    const challenge = store.get("challenge");
-    this.challenge = challenge?.level === this.level.id ? challenge : null;
+    this.challenge = store.get("challenge");
+    // What carries on from level to level: the score, who got hit, the best combo.
+    const run = data.run ?? { score: 0, hits: {}, bestCombo: 0 };
     paintLevel(this, this.level);
     this.snow = this.level.snow === false ? null : snowfall(this, 25);
 
     this.elves = [];
-    this.score = 0;
+    this.score = run.score;
+    this.levelScore = 0;
+    this.goalMade = false;
     this.cake = 0;
-    this.hits = {};
-    this.bestCombo = 0;
+    this.hits = run.hits;
+    this.bestCombo = run.bestCombo;
     this.spawnIn = 0.8;
     this.flight = null;
     this.ready = false;
@@ -65,7 +69,23 @@ export class PlayScene extends Phaser.Scene {
     document.addEventListener("visibilitychange", away);
     this.events.once("shutdown", () => document.removeEventListener("visibilitychange", away));
     this.drawDebug();
+    this.announceLevel();
     this.newCake();
+  }
+
+  // The level's name and goal, big, as it starts; on the first level a dare says who to beat.
+  announceLevel() {
+    const n = this.levelIndex + 1;
+    const banner = this.add.container(0, 0, [
+      text(this, W / 2, 380, `LEVEL ${n}`, 64, { color: "#ffe066" }),
+      text(this, W / 2, 446, this.level.name, 36),
+      text(this, W / 2, 500, `GOAL: ${this.level.goal.toLocaleString()} POINTS`, 28, { color: "#7CFC9A" }),
+    ]).setDepth(80);
+    if (this.challenge && n === 1) {
+      const c = this.challenge;
+      banner.add(text(this, W / 2, 556, `BEAT ${c.initials}'S ${c.score.toLocaleString()}!`, 26, { color: "#ff9ec4" }));
+    }
+    this.tweens.add({ targets: banner, alpha: 0, delay: 1600, duration: 400, onComplete: () => banner.destroy() });
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -76,7 +96,7 @@ export class PlayScene extends Phaser.Scene {
     band.fillStyle(0x000000, 0.35);
     band.fillRect(0, 0, W, 92);
     this.scoreText = text(this, 20, 32, "0", 36, { originX: 0, color: "#ffe066" }).setDepth(70);
-    this.levelText = text(this, 20, 70, this.level.name, 18, { originX: 0, color: "#ffffff", strokeThickness: 3 }).setDepth(70);
+    this.levelText = text(this, 20, 70, "", 18, { originX: 0, color: "#ffffff", strokeThickness: 3 }).setDepth(70);
     this.cakeText = text(this, W - 20, 32, "", 26, { originX: 1 }).setDepth(70);
     this.windText = text(this, W - 20, 70, "", 18, { originX: 1, color: "#bfe3ff", strokeThickness: 3 }).setDepth(70);
     const pause = this.add.graphics().setDepth(70);
@@ -85,14 +105,14 @@ export class PlayScene extends Phaser.Scene {
     pause.fillStyle(0xffffff, 0.9);
     pause.fillRoundedRect(W / 2 - 13, 31, 9, 30, 3);
     pause.fillRoundedRect(W / 2 + 4, 31, 9, 30, 3);
-    if (this.challenge) {
-      const c = this.challenge;
-      this.levelText.setText(`BEAT ${c.initials}'S ${c.score.toLocaleString()}`).setColor("#7CFC9A");
-    }
   }
 
   updateHud() {
     this.scoreText.setText(this.score.toLocaleString());
+    const goal = this.level.goal;
+    this.levelText
+      .setText(this.goalMade ? `LEVEL ${this.levelIndex + 1} · GOAL MADE ✓` : `LEVEL ${this.levelIndex + 1} · ${this.levelScore.toLocaleString()} / ${goal.toLocaleString()}`)
+      .setColor(this.goalMade ? "#7CFC9A" : "#ffffff");
     this.cakeText.setText(`CAKE ${Math.min(this.cake + 1, CAKES)} / ${CAKES}`);
     const strength = Math.min(3, Math.ceil(Math.abs(this.wind) / 60));
     const arrows = (this.wind < 0 ? "←" : "→").repeat(strength);
@@ -100,7 +120,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   // Paused: everything stops, with a choice to keep playing or quit to the title. Quitting drops the
-  // round, so nothing is scored or posted.
+  // game, so nothing is scored or posted.
   pause() {
     if (this.paused || this.finished) return;
     this.pointerId = null;
@@ -123,7 +143,7 @@ export class PlayScene extends Phaser.Scene {
       text(this, W / 2, 330, "PAUSED", 60, { color: "#ffe066" }),
       text(this, W / 2, KEEP.y + KEEP.h / 2, "KEEP PLAYING", 32),
       text(this, W / 2, QUIT.y + QUIT.h / 2, "QUIT", 32),
-      text(this, W / 2, QUIT.y + QUIT.h + 34, "quitting doesn't count this round", 18, { color: "#cfd8ff", strokeThickness: 3 }),
+      text(this, W / 2, QUIT.y + QUIT.h + 34, "quitting doesn't count this game", 18, { color: "#cfd8ff", strokeThickness: 3 }),
     ]).setDepth(100);
   }
 
@@ -320,7 +340,7 @@ export class PlayScene extends Phaser.Scene {
     elf.takeHit();
     const pts = elf.points + (where === "face" ? FACE_BONUS : 0);
     f.points += pts;
-    this.score += pts;
+    this.addPoints(pts);
     this.hits[elf.character.id] = (this.hits[elf.character.id] || 0) + 1;
     this.bestCombo = Math.max(this.bestCombo, f.hits);
 
@@ -335,7 +355,7 @@ export class PlayScene extends Phaser.Scene {
 
     if (f.hits === 2) {
       // Two elves with one fruitcake doubles the whole throw.
-      this.score += f.points;
+      this.addPoints(f.points);
       this.time.delayedCall(250, () => floatText(this, W / 2, 420, `COMBO! +${f.points}`, "#7CFC9A", 44));
       audio.play("combo");
       this.cakeImg.setVisible(false);
@@ -360,7 +380,7 @@ export class PlayScene extends Phaser.Scene {
     const prop = this.level.props.find((p) => Math.hypot(p.x - f.x, p.y - f.y) < p.r + r);
     this.crumbs(f.x, f.y);
     if (prop) {
-      this.score = Math.max(0, this.score + prop.points);
+      this.addPoints(prop.points);
       floatText(this, prop.x, prop.y - 60, `${prop.name}! ${prop.points}`, "#ff6b6b", 26);
       audio.play("smash");
       navigator.vibrate?.([40, 40, 80]);
@@ -386,7 +406,7 @@ export class PlayScene extends Phaser.Scene {
     this.cake++;
     if (this.cake >= CAKES) {
       this.finished = true;
-      this.time.delayedCall(1700, () => this.finishRound());
+      this.time.delayedCall(1300, () => this.finishLevel());
     } else {
       this.time.delayedCall(550, () => this.newCake());
     }
@@ -412,11 +432,42 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
-  finishRound() {
-    const result = store.recordRound(this.level.id, this.score, this.hits);
-    this.scene.start("Results", {
-      level: this.levelIndex, score: this.score, hits: this.hits, bestCombo: this.bestCombo,
-      challenge: this.challenge, ...result,
+  // Points for the game and for this level's goal. The score never drops below zero.
+  addPoints(n) {
+    const before = this.score;
+    this.score = Math.max(0, this.score + n);
+    this.levelScore += this.score - before;
+    if (!this.goalMade && this.levelScore >= this.level.goal) {
+      this.goalMade = true;
+      this.time.delayedCall(500, () => floatText(this, W / 2, 330, "GOAL MADE!", "#7CFC9A", 48));
+      audio.play("cheer");
+    }
+  }
+
+  // Ten cakes thrown: on to the next level if the goal was made, otherwise the game is over.
+  finishLevel() {
+    const last = this.levelIndex === LEVELS.length - 1;
+    const goOn = this.goalMade && !last;
+    const words = goOn ? "LEVEL CLEAR!" : this.goalMade ? "YOU BEAT\nEVERY LEVEL!" : "GAME OVER";
+    const colour = goOn || this.goalMade ? "#7CFC9A" : "#ff6b6b";
+    const shade = this.add.rectangle(0, 0, W, H, 0x000000, 0.45).setOrigin(0).setDepth(95);
+    const big = text(this, W / 2, 420, words, 64, { color: colour }).setDepth(96).setScale(0.4);
+    this.tweens.add({ targets: big, scale: 1, duration: 350, ease: "Back.easeOut" });
+    if (!goOn && !this.goalMade) {
+      text(this, W / 2, 500, `needed ${this.level.goal.toLocaleString()}, got ${this.levelScore.toLocaleString()}`, 26, { color: "#ffffff" }).setDepth(96);
+    }
+    audio.play(goOn || this.goalMade ? "cheer" : "groan");
+    shade.setInteractive(); // a tap here mustn't throw anything
+    this.time.delayedCall(2000, () => {
+      if (goOn) {
+        this.scene.start("Play", { level: this.levelIndex + 1, run: { score: this.score, hits: this.hits, bestCombo: this.bestCombo } });
+        return;
+      }
+      const result = store.recordRound(store.GAME_BOARD, this.score, this.hits);
+      this.scene.start("Results", {
+        level: this.levelIndex, allClear: this.goalMade, score: this.score, hits: this.hits,
+        bestCombo: this.bestCombo, challenge: this.challenge, ...result,
+      });
     });
   }
 }
