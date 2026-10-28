@@ -88,7 +88,7 @@ The online high scores and the everyone-wide MOST WANTED count live in the **She
 | `js/share.js` | Trash talk: the share sheet (or a text message), the score picture, dare links |
 | `js/config.js` | Where the game lives (for dare links) and the Shed service's address |
 | `js/textures.js` | The little things drawn in code (crumbs, stars, snow, the plate), and stand-ins for any missing picture |
-| `js/audio.js` | Placeholder sound effects, and the voice clips |
+| `js/audio.js` | Sound effects, the level-start fanfare, the holiday music (public-domain carols played in code: add one to `SONGS`), and the voice clips |
 | `js/scenes/` | Boot, Name (initials), Title, Play, Results, Board (high scores) |
 | `sw.js`, `manifest.webmanifest` | Offline play and installing as an app |
 | `amplify.yml` | How Amplify publishes a push |

@@ -70,6 +70,7 @@ export class PlayScene extends Phaser.Scene {
     document.addEventListener("visibilitychange", away);
     this.events.once("shutdown", () => document.removeEventListener("visibilitychange", away));
     this.drawDebug();
+    audio.startMusic(); // already playing when this is the next level of a game
     this.announceLevel();
     this.newCake();
   }
@@ -87,6 +88,7 @@ export class PlayScene extends Phaser.Scene {
       banner.add(text(this, W / 2, 556, `BEAT ${c.initials}'S ${c.score.toLocaleString()}!`, 26, { color: "#ff9ec4" }));
     }
     this.tweens.add({ targets: banner, alpha: 0, delay: 1600, duration: 400, onComplete: () => banner.destroy() });
+    audio.play("levelStart");
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -126,6 +128,7 @@ export class PlayScene extends Phaser.Scene {
     if (!this.flight && this.ready) this.cakeImg.setPosition(PLATE.x, PLATE.y);
     this.tweens.pauseAll();
     this.time.paused = true;
+    audio.stopMusic();
     const dim = this.add.graphics();
     dim.fillStyle(0x000000, 0.6);
     dim.fillRect(0, 0, W, H);
@@ -154,6 +157,7 @@ export class PlayScene extends Phaser.Scene {
       this.paused = null;
       this.tweens.resumeAll();
       this.time.paused = false;
+      audio.startMusic();
     }
   }
 
@@ -452,6 +456,7 @@ export class PlayScene extends Phaser.Scene {
       text(this, W / 2, 500, `needed ${this.level.goal.toLocaleString()}, got ${this.levelScore.toLocaleString()}`, 26, { color: "#ffffff" }).setDepth(96);
     }
     audio.play(goOn || this.goalMade ? "cheer" : "groan");
+    if (!goOn) audio.stopMusic();
     shade.setInteractive(); // a tap here mustn't throw anything
     this.time.delayedCall(2000, () => {
       if (goOn) {
