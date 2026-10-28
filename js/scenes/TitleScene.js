@@ -1,7 +1,7 @@
 // The title: swipe up to play (a game always starts at level 1), down for the scoreboard.
 // Taps work too: the level card plays, your initials change them.
 import * as audio from "../audio.js";
-import { install, installHint, installed, onHintChange } from "../install.js";
+import { install, installHint, onHintChange } from "../install.js";
 import * as store from "../storage.js";
 import { checkForUpdate, update, versionLabel } from "../update.js";
 import { LEVELS, paintLevel } from "../levels.js";
@@ -45,10 +45,8 @@ export class TitleScene extends Phaser.Scene {
       text(this, W / 2, 330, `YOUR BEST  ${best.toLocaleString()}`, 20, { color: "#cfd8ff", strokeThickness: 3 });
     }
     this.soundText = text(this, 22, 40, "", 18, { originX: 0, color: "#cfd8ff" });
-    this.soundArea = { x: 0, y: 0, w: 150, h: 62 };
+    this.soundArea = { x: 0, y: 0, w: 150, h: 80 };
     this.showSound();
-    text(this, 22, 82, "✕ QUIT", 18, { originX: 0, color: "#cfd8ff" });
-    this.quitArea = { x: 0, y: 62, w: 150, h: 50 };
 
     this.card = this.add.container(0, 0).setDepth(2);
     this.drawCard();
@@ -80,7 +78,6 @@ export class TitleScene extends Phaser.Scene {
         else if (this.hint?.tap && inside(x, y, INSTALL)) install();
         else if (inside(x, y, VERSION_AREA)) this.lookForUpdate(true);
         else if (inside(x, y, this.soundArea)) this.toggleSound();
-        else if (inside(x, y, this.quitArea)) this.quit();
         else if (inside(x, y, CARD)) this.play();
       },
     });
@@ -89,20 +86,6 @@ export class TitleScene extends Phaser.Scene {
   play() {
     audio.play("whoosh");
     this.scene.start("Play", { level: 0 });
-  }
-
-  // Installed, the game closes itself where the phone allows it (Android). Where it doesn't (iPhone),
-  // it says how. In a browser tab, quitting goes to the Fun Shed's home page.
-  quit() {
-    if (!installed()) {
-      location.href = "https://thefunshed.com/";
-      return;
-    }
-    window.close();
-    this.time.delayedCall(400, () => {
-      const howTo = text(this, W / 2, 380, "To close the game,\nswipe it away", 28).setDepth(5);
-      this.tweens.add({ targets: howTo, alpha: 0, delay: 2500, duration: 400, onComplete: () => howTo.destroy() });
-    });
   }
 
   // The first level drawn small, as a card.

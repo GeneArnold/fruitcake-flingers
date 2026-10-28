@@ -21,8 +21,7 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
 - **First time:** swipe in your three initials, arcade style (↑ ↓ change a letter, → next).
 - **Title:** swipe up (or tap the picture) to play, down for the high scores.
   Tap your initials (top right) to change them.
-  QUIT (top left) closes the installed game on Android; on an iPhone it says to swipe it away,
-  and in a browser tab it goes to thefunshed.com.
+  There's no quit button: a phone won't let a web game close itself, so you leave it like any app.
 - **A game** runs through the six levels in order, from the Front Yard to Christmas Morning. Each
   level gives you 10 fruitcakes and has a **goal** (1,200 points on the first, about five hits
   out of ten, up to 1,800 on the last; `goal` in `js/levels.js`). Make the goal and the next level starts by itself, with the
