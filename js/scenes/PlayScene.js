@@ -19,11 +19,12 @@ const PAUSE = { x: W / 2 - 50, y: 0, w: 100, h: 92 };  // the pause button, in t
 const KEEP = { x: 90, y: 430, w: W - 180, h: 80 };
 const QUIT = { x: 90, y: 550, w: W - 180, h: 80 };
 
-// Within a round the game gets harder in three steps.
+// Within a level the game gets harder in three steps: elves duck sooner, walkers and fliers join in,
+// and there is less aim help.
 function phaseFor(cake) {
-  if (cake < 3) return { kinds: ["pop"], maxUp: 2, stay: 3.2, wind: 0, assist: 10 };
-  if (cake < 7) return { kinds: ["pop"], maxUp: 3, stay: 2.4, wind: 110, assist: 7 };
-  return { kinds: ["pop", "walk", "fly"], maxUp: 3, stay: 1.9, wind: 170, assist: 5 };
+  if (cake < 3) return { kinds: ["pop"], maxUp: 2, stay: 3.2, assist: 10 };
+  if (cake < 7) return { kinds: ["pop"], maxUp: 3, stay: 2.4, assist: 7 };
+  return { kinds: ["pop", "walk", "fly"], maxUp: 3, stay: 1.9, assist: 5 };
 }
 
 export class PlayScene extends Phaser.Scene {
@@ -97,8 +98,7 @@ export class PlayScene extends Phaser.Scene {
     band.fillRect(0, 0, W, 92);
     this.scoreText = text(this, 20, 32, "0", 36, { originX: 0, color: "#ffe066" }).setDepth(70);
     this.levelText = text(this, 20, 70, "", 18, { originX: 0, color: "#ffffff", strokeThickness: 3 }).setDepth(70);
-    this.cakeText = text(this, W - 20, 32, "", 26, { originX: 1 }).setDepth(70);
-    this.windText = text(this, W - 20, 70, "", 18, { originX: 1, color: "#bfe3ff", strokeThickness: 3 }).setDepth(70);
+    this.cakeText = text(this, W - 20, 46, "", 26, { originX: 1 }).setDepth(70);
     const pause = this.add.graphics().setDepth(70);
     pause.fillStyle(0x000000, 0.35);
     pause.fillRoundedRect(W / 2 - 30, 16, 60, 60, 14);
@@ -114,9 +114,6 @@ export class PlayScene extends Phaser.Scene {
       .setText(this.goalMade ? `LEVEL ${this.levelIndex + 1} · GOAL MADE ✓` : `LEVEL ${this.levelIndex + 1} · ${this.levelScore.toLocaleString()} / ${goal.toLocaleString()}`)
       .setColor(this.goalMade ? "#7CFC9A" : "#ffffff");
     this.cakeText.setText(`CAKE ${Math.min(this.cake + 1, CAKES)} / ${CAKES}`);
-    const strength = Math.min(3, Math.ceil(Math.abs(this.wind) / 60));
-    const arrows = (this.wind < 0 ? "←" : "→").repeat(strength);
-    this.windText.setText(strength ? `WIND ${arrows}` : "NO WIND");
   }
 
   // Paused: everything stops, with a choice to keep playing or quit to the title. Quitting drops the
@@ -185,8 +182,6 @@ export class PlayScene extends Phaser.Scene {
   newCake() {
     if (this.cake >= CAKES) return;
     this.phase = phaseFor(this.cake);
-    this.wind = this.phase.wind ? Phaser.Math.Between(-this.phase.wind, this.phase.wind) : 0;
-    if (this.snow) this.snow.speedX = this.wind * 0.5;
     this.updateHud();
     this.tweens.killTweensOf(this.cakeImg); // a fade from the last landing must not hide this one
     this.cakeImg.setPosition(PLATE.x, H + 80).setScale(1).setAngle(0).setAlpha(1).setVisible(true);
@@ -313,7 +308,7 @@ export class PlayScene extends Phaser.Scene {
     const f = this.flight;
     f.v -= f.a * dt;
     const step = Math.max(0, f.v) * dt;
-    f.x += f.dirX * step + this.wind * 0.8 * dt;
+    f.x += f.dirX * step;
     f.y += f.dirY * step;
     f.dist += step;
     const scale = Math.max(0.42, 1 - f.dist * 0.00065);
