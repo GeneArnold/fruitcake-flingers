@@ -33,7 +33,6 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
   The pause button (top middle) stops the game, with KEEP PLAYING or QUIT; quitting doesn't
   count the game. Switching to another app pauses it too.
 - Hit two elves with one fruitcake for a combo (double points), right in the face for +50.
-  Don't land a short throw on Grandma's good china.
 - **After a game:** swipe up to play again, down for the high scores, left (or tap TRASH TALK) to
   text your score with a dare link, right for the menu.
 - **High scores:** the top 10 games (board `game`, here and on the family board), then MOST
@@ -74,10 +73,10 @@ The online high scores and the everyone-wide MOST WANTED count live in the **She
 |---|---|
 | `elves/elves.json` | The cast: id, name, voice number, face pictures |
 | `elves/faces/` | Face pictures: the head with its hat, `<id>.png`, `-dazed` and `-splat`, all 256 px squares |
-| `img/` | The cartoon art: a background per level (`bg-<level>.jpg`), the don't-hit props (`prop-*.png`), elf bodies, the fruitcake, the splat, the sleigh, the balloons |
+| `img/` | The cartoon art: a background per level (`bg-<level>.jpg`), elf bodies, the fruitcake, the splat, the sleigh, the balloons |
 | `sayings/sayings.json` | Lines: `hit`, `miss`, `gentle` (spoken) and `trash` (for texting a score) |
 | `sayings/voices/v<n>/` | Recorded lines, one folder per elf voice |
-| `js/levels.js` | The levels: a background picture, elf spots, don't-hit props. Add a level here |
+| `js/levels.js` | The levels: a background picture, elf spots, a goal. Add a level here |
 | `js/flick.js` | Turns a swipe into a throw (tested by `node tools/test-flick.mjs`) |
 | `js/elf.js` | One elf: pops up, walks or flies, gets splatted |
 | `js/cast.js` | The elves and sayings, who appears next, which voice clip to play |
@@ -116,4 +115,4 @@ The online high scores and the everyone-wide MOST WANTED count live in the **She
   are set at the top of that script; Chatterbox runs on cerebro (http://192.168.40.110:8004).
   `--force` re-records everything.
 - **A level:** add an entry to `LEVELS` in `js/levels.js` and its background, `img/bg-<id>.jpg`
-  (768 x 1344, from `tools/art-prompts.py levels`). Nudge the spots and props with `?debug` on.
+  (768 x 1344, from `tools/art-prompts.py levels`). Nudge the spots with `?debug` on.

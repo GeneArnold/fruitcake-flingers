@@ -161,7 +161,7 @@ export class PlayScene extends Phaser.Scene {
     }
   }
 
-  // With ?debug in the address, every spot and prop is outlined, to help line them up with art.
+  // With ?debug in the address, every spot is outlined, to help line them up with art.
   drawDebug() {
     if (!new URLSearchParams(location.search).has("debug")) return;
     const g = this.add.graphics().setDepth(90);
@@ -174,8 +174,6 @@ export class PlayScene extends Phaser.Scene {
         g.lineBetween(s.x1 ?? 0, s.y, s.x2 ?? W, s.y);
       }
     }
-    g.lineStyle(2, 0xff0000);
-    for (const p of this.level.props) g.strokeCircle(p.x, p.y, p.r);
     g.lineStyle(2, 0xffff00);
     g.lineBetween(0, ZONE_TOP, W, ZONE_TOP);
   }
@@ -373,24 +371,13 @@ export class PlayScene extends Phaser.Scene {
     this.updateHud();
   }
 
-  // The fruitcake ran out of steam. A short throw can land on something it should not.
+  // The fruitcake ran out of steam and lands with a thud.
   land() {
     const f = this.flight;
-    const r = CAKE_R * this.cakeImg.scale;
-    const prop = this.level.props.find((p) => Math.hypot(p.x - f.x, p.y - f.y) < p.r + r);
     this.crumbs(f.x, f.y);
-    if (prop) {
-      this.addPoints(prop.points);
-      floatText(this, prop.x, prop.y - 60, `${prop.name}! ${prop.points}`, "#ff6b6b", 26);
-      audio.play("smash");
-      navigator.vibrate?.([40, 40, 80]);
-      this.cakeImg.setVisible(false);
-      this.updateHud();
-    } else {
-      audio.play("thud");
-      this.tweens.add({ targets: this.cakeImg, alpha: 0, delay: 250, duration: 300 });
-    }
-    this.endThrow(f.hits === 0 && !prop);
+    audio.play("thud");
+    this.tweens.add({ targets: this.cakeImg, alpha: 0, delay: 250, duration: 300 });
+    this.endThrow(f.hits === 0);
   }
 
   endThrow(missed) {

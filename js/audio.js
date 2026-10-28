@@ -71,10 +71,6 @@ const SOUNDS = {
     tone(110, 0.25, { type: "sine", volume: 0.2, slideTo: 45 });
     noise(0.12, { volume: 0.1, filter: 300 });
   },
-  smash() {
-    noise(0.5, { volume: 0.25, filter: 3500, type: "highpass" });
-    [1800, 2400, 2100].forEach((f, i) => tone(f, 0.12, { type: "triangle", volume: 0.05, delay: i * 0.05 }));
-  },
   giggle() {
     [900, 1100, 950, 1200, 1000].forEach((f, i) => tone(f, 0.07, { type: "triangle", volume: 0.05, delay: i * 0.08 }));
   },

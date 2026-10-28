@@ -1,6 +1,6 @@
 # The prompts behind the cartoon art, so any picture can be made again. Each line runs tools/swarm.py.
 #   python3 tools/art-prompts.py elves [ids...]   expression sheets: normal, dazed, splatted
-#   python3 tools/art-prompts.py things           fruitcake, splat, sleigh, balloons, bodies, props
+#   python3 tools/art-prompts.py things           fruitcake, splat, sleigh, balloons, bodies
 #   python3 tools/art-prompts.py levels [ids...]  backgrounds (768 x 1344)
 # Tries land in art/source/gen/; tools/cutout.py and tools/place-art.py turn the picks into game art.
 import subprocess
@@ -58,15 +58,6 @@ THINGS = {
                "left, no reindeer, no people", 1344, 768),
     "balloons": ("a bunch of three shiny party balloons, red, blue and yellow, strings tied together "
                  "at the bottom", 768, 1024),
-    "props1": ("four separate items side by side, evenly spaced, not overlapping: 1 a stack of fancy "
-               "white china plates with blue patterns, 2 a red poinsettia in a clay pot, 3 a fancy glass "
-               "jewelry display case, 4 a pile of juice boxes", 1792, 768),
-    "props2": ("four separate items side by side, evenly spaced, not overlapping: 1 a smartphone, 2 a mug "
-               "of hot cocoa with marshmallows, 3 a long paper scroll titled naughty list, 4 a plaid "
-               "thermos flask", 1792, 768),
-    "props3": ("four separate items side by side, evenly spaced, not overlapping: 1 a pair of rental ice "
-               "skates, 2 a big new flat screen TV in a box with a bow, 3 a plate of cookies and a glass "
-               "of milk, 4 a jolly mall Santa sitting on a big red chair", 1792, 768),
 }
 
 BG = (", 2D cartoon game background art, bold clean black outlines, flat bright colors, simple cel "
