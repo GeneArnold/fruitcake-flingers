@@ -1,10 +1,11 @@
-// One elf from the cast: an elf body, its face and a hat. It pops up from behind something,
+// One elf from the cast: an elf body and its head (the face picture, hat included). It pops up from behind something,
 // walks along a ledge or flies across the sky, depending on the level spot it was given.
 import { faceKey } from "./cast.js";
 import { ELF_COLOURS } from "./textures.js";
 
-export const HEAD_R = 44;   // radius of the face as drawn (the face picture is 120 px wide)
-const FACE_SIZE = 120;
+export const HEAD_R = 44;   // radius of the face as drawn
+const FACE_SIZE = 150;      // the face picture: a square with the hat on top and the collar at the bottom
+const FACE_Y = 0.62;        // where the middle of the face is, down the picture
 const UP_OFFSET = 52;       // how far the head centre rises above the sill
 const HIDDEN_OFFSET = 120;  // how far below the sill it hides
 
@@ -19,13 +20,13 @@ export class Elf {
     this.stay = stay;
     this.bob = Math.random() * 6;
 
-    const colour = Math.floor(Math.random() * ELF_COLOURS.length);
-    this.body = scene.add.image(0, 30, `elf-body-${colour}`).setOrigin(0.5, 0);
-    this.faceImg = scene.add.image(0, 0, faceKey(scene, character)).setDisplaySize(FACE_SIZE, FACE_SIZE);
-    this.hat = scene.add.image(6, -22, `elf-hat-${colour}`).setOrigin(0.5, 1).setScale(0.8);
-    const parts = [this.body, this.faceImg, this.hat];
-    if (spot.vehicle === "sleigh") parts.push(scene.add.image(-10, 92, "sleigh"));
-    if (spot.vehicle === "balloons") parts.unshift(scene.add.image(0, -150, "balloons"));
+    // The body matches the elf's hat; an elf without an outfit gets a random one.
+    const colour = character.outfit ?? Math.floor(Math.random() * ELF_COLOURS.length);
+    this.body = width(scene.add.image(0, 38, `elf-body-${colour}`).setOrigin(0.5, 0), 112);
+    this.faceImg = scene.add.image(0, 0, faceKey(scene, character)).setOrigin(0.5, FACE_Y).setDisplaySize(FACE_SIZE, FACE_SIZE);
+    const parts = [this.body, this.faceImg];
+    if (spot.vehicle === "sleigh") parts.push(width(scene.add.image(-10, 100, "sleigh"), 250));
+    if (spot.vehicle === "balloons") parts.unshift(width(scene.add.image(0, -100, "balloons").setOrigin(0.5, 1), 150));
     this.c = scene.add.container(0, 0, parts).setScale(this.s).setDepth(spot.depth ?? 20);
 
     if (spot.kind === "pop") this.startPop();
@@ -128,7 +129,7 @@ export class Elf {
     this.scene.time.delayedCall(450, () => {
       if (this.state === "gone") return;
       this.faceImg.setTexture(faceKey(this.scene, this.character, "dazed"));
-      const stars = (this.stars = this.scene.add.container(0, -70));
+      const stars = (this.stars = this.scene.add.container(0, -60));
       for (let i = 0; i < 3; i++) {
         const a = (i / 3) * Math.PI * 2;
         stars.add(this.scene.add.image(Math.cos(a) * 46, Math.sin(a) * 12, "star"));
@@ -160,4 +161,9 @@ export class Elf {
     this.c.destroy();
     this.maskShape?.destroy();
   }
+}
+
+// Scales a picture to a width in game pixels, whatever size the picture file is.
+function width(img, w) {
+  return img.setScale(w / img.width);
 }

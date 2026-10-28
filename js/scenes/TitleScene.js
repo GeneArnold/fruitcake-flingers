@@ -31,7 +31,7 @@ export class TitleScene extends Phaser.Scene {
 
     text(this, W / 2, 132, "FRUITCAKE", 62, { color: "#ffe066" });
     text(this, W / 2, 194, "FLINGERS", 62, { color: "#ff6b6b" });
-    const cake = this.add.image(W / 2, 270, "fruitcake").setScale(0.7);
+    const cake = this.add.image(W / 2, 270, "fruitcake");
     this.tweens.add({ targets: cake, angle: { from: -8, to: 8 }, duration: 700, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
 
     // Who is playing (tap to change initials), and sound on or off (tap to change).

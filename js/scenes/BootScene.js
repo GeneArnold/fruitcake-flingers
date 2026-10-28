@@ -3,8 +3,8 @@ import * as cast from "../cast.js";
 import * as online from "../online.js";
 import * as store from "../storage.js";
 import { readChallenge } from "../share.js";
-import { LEVELS } from "../levels.js";
-import { makeTextures } from "../textures.js";
+import { LEVELS, levelPictures } from "../levels.js";
+import { PICTURES, makeTextures } from "../textures.js";
 import { H, W, setupCamera, text } from "../ui.js";
 
 export class BootScene extends Phaser.Scene {
@@ -28,6 +28,8 @@ export class BootScene extends Phaser.Scene {
         }
       }
     });
+    for (const key of PICTURES) this.load.image(key, `img/${key}.png`);
+    for (const [key, url] of levelPictures()) this.load.image(key, url);
     this.load.on("progress", (v) => status.setText(`Baking fruitcakes... ${Math.round(v * 100)}%`));
     this.load.on("loaderror", (file) => console.warn("Could not load", file.src));
   }

@@ -1,8 +1,11 @@
-// Placeholder art drawn in code at start-up: elf bodies and hats, the fruitcake, crumbs, the splat.
-// When the artist's pictures exist, load them in BootScene under the same keys and delete the
-// matching drawing here; nothing else in the game needs to change.
+// Art drawn in code at start-up: crumbs, stars, snow, the plate, and stand-ins for any picture in
+// img/ that is missing. BootScene loads the pictures first (PICTURES), and a drawing is skipped when
+// its picture is there, so a new picture only has to land in img/ under the same name.
 
-export const ELF_COLOURS = [0x2e9e48, 0xc62f2f, 0x1f8a8a, 0x7b4bb3];
+export const ELF_COLOURS = [0x2e9e48, 0xc62f2f, 0x1f8a8a, 0x7b4bb3];  // green, red, teal, purple
+
+// The cartoon pictures in img/ (made on cerebro, tools/art-prompts.py), loaded under these keys.
+export const PICTURES = ["fruitcake", "splat", "sleigh", "balloons", ...ELF_COLOURS.map((_, i) => `elf-body-${i}`)];
 
 function draw(scene, key, w, h, paint) {
   if (scene.textures.exists(key)) return;
@@ -42,14 +45,6 @@ export function makeTextures(scene) {
       g.fillTriangle(46, 10, 62, 10, 54, 30);
       g.fillTriangle(58, 10, 74, 10, 66, 30);
       g.fillTriangle(74, 10, 90, 10, 82, 30);
-    });
-    // Hat: a floppy point with a white band and a pom-pom, 150 x 110, sitting on its bottom edge.
-    draw(scene, `elf-hat-${i}`, 150, 110, (g) => {
-      g.fillStyle(colour);
-      g.fillTriangle(22, 92, 128, 92, 120, 14);
-      g.fillStyle(0xffffff);
-      g.fillRoundedRect(14, 84, 122, 24, 12);
-      g.fillCircle(124, 14, 13);
     });
   });
 

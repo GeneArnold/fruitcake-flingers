@@ -5,180 +5,220 @@
       "name": "Jingles",
       "voice": 0,
       "faces": {
-        "normal": "faces/jingles.svg",
-        "dazed": "faces/jingles-dazed.svg"
-      }
+        "normal": "faces/jingles.png",
+        "dazed": "faces/jingles-dazed.png",
+        "splat": "faces/jingles-splat.png"
+      },
+      "outfit": 0
     },
     {
       "id": "sprinkles",
       "name": "Sprinkles",
       "voice": 1,
       "faces": {
-        "normal": "faces/sprinkles.svg",
-        "dazed": "faces/sprinkles-dazed.svg"
-      }
+        "normal": "faces/sprinkles.png",
+        "dazed": "faces/sprinkles-dazed.png",
+        "splat": "faces/sprinkles-splat.png"
+      },
+      "outfit": 1
     },
     {
       "id": "twinkletoes",
       "name": "Twinkletoes",
       "voice": 1,
       "faces": {
-        "normal": "faces/twinkletoes.svg",
-        "dazed": "faces/twinkletoes-dazed.svg"
-      }
+        "normal": "faces/twinkletoes.png",
+        "dazed": "faces/twinkletoes-dazed.png",
+        "splat": "faces/twinkletoes-splat.png"
+      },
+      "outfit": 2
     },
     {
       "id": "pudding",
       "name": "Pudding",
       "voice": 2,
       "faces": {
-        "normal": "faces/pudding.svg",
-        "dazed": "faces/pudding-dazed.svg"
-      }
+        "normal": "faces/pudding.png",
+        "dazed": "faces/pudding-dazed.png",
+        "splat": "faces/pudding-splat.png"
+      },
+      "outfit": 0
     },
     {
       "id": "figgy",
       "name": "Figgy",
       "voice": 0,
       "faces": {
-        "normal": "faces/figgy.svg",
-        "dazed": "faces/figgy-dazed.svg"
-      }
+        "normal": "faces/figgy.png",
+        "dazed": "faces/figgy-dazed.png",
+        "splat": "faces/figgy-splat.png"
+      },
+      "outfit": 3
     },
     {
       "id": "nutmeg",
       "name": "Nutmeg",
       "voice": 3,
       "faces": {
-        "normal": "faces/nutmeg.svg",
-        "dazed": "faces/nutmeg-dazed.svg"
-      }
+        "normal": "faces/nutmeg.png",
+        "dazed": "faces/nutmeg-dazed.png",
+        "splat": "faces/nutmeg-splat.png"
+      },
+      "outfit": 1
     },
     {
       "id": "tinsel",
       "name": "Tinsel",
       "voice": 1,
       "faces": {
-        "normal": "faces/tinsel.svg",
-        "dazed": "faces/tinsel-dazed.svg"
-      }
+        "normal": "faces/tinsel.png",
+        "dazed": "faces/tinsel-dazed.png",
+        "splat": "faces/tinsel-splat.png"
+      },
+      "outfit": 2
     },
     {
       "id": "gumdrop",
       "name": "Gumdrop",
       "voice": 3,
       "faces": {
-        "normal": "faces/gumdrop.svg",
-        "dazed": "faces/gumdrop-dazed.svg"
-      }
+        "normal": "faces/gumdrop.png",
+        "dazed": "faces/gumdrop-dazed.png",
+        "splat": "faces/gumdrop-splat.png"
+      },
+      "outfit": 3
     },
     {
       "id": "cocoa",
       "name": "Cocoa",
       "voice": 3,
       "faces": {
-        "normal": "faces/cocoa.svg",
-        "dazed": "faces/cocoa-dazed.svg"
-      }
+        "normal": "faces/cocoa.png",
+        "dazed": "faces/cocoa-dazed.png",
+        "splat": "faces/cocoa-splat.png"
+      },
+      "outfit": 0
     },
     {
       "id": "pickles",
       "name": "Pickles",
       "voice": 0,
       "faces": {
-        "normal": "faces/pickles.svg",
-        "dazed": "faces/pickles-dazed.svg"
-      }
+        "normal": "faces/pickles.png",
+        "dazed": "faces/pickles-dazed.png",
+        "splat": "faces/pickles-splat.png"
+      },
+      "outfit": 1
     },
     {
       "id": "buttons",
       "name": "Buttons",
       "voice": 2,
       "faces": {
-        "normal": "faces/buttons.svg",
-        "dazed": "faces/buttons-dazed.svg"
-      }
+        "normal": "faces/buttons.png",
+        "dazed": "faces/buttons-dazed.png",
+        "splat": "faces/buttons-splat.png"
+      },
+      "outfit": 2
     },
     {
       "id": "mistletoe",
       "name": "Mistletoe",
       "voice": 1,
       "faces": {
-        "normal": "faces/mistletoe.svg",
-        "dazed": "faces/mistletoe-dazed.svg"
-      }
+        "normal": "faces/mistletoe.png",
+        "dazed": "faces/mistletoe-dazed.png",
+        "splat": "faces/mistletoe-splat.png"
+      },
+      "outfit": 3
     },
     {
       "id": "peppermint",
       "name": "Peppermint",
       "voice": 3,
       "faces": {
-        "normal": "faces/peppermint.svg",
-        "dazed": "faces/peppermint-dazed.svg"
-      }
+        "normal": "faces/peppermint.png",
+        "dazed": "faces/peppermint-dazed.png",
+        "splat": "faces/peppermint-splat.png"
+      },
+      "outfit": 0
     },
     {
       "id": "sugarplum",
       "name": "Sugarplum",
       "voice": 1,
       "faces": {
-        "normal": "faces/sugarplum.svg",
-        "dazed": "faces/sugarplum-dazed.svg"
-      }
+        "normal": "faces/sugarplum.png",
+        "dazed": "faces/sugarplum-dazed.png",
+        "splat": "faces/sugarplum-splat.png"
+      },
+      "outfit": 1
     },
     {
       "id": "noodle",
       "name": "Noodle",
       "voice": 0,
       "faces": {
-        "normal": "faces/noodle.svg",
-        "dazed": "faces/noodle-dazed.svg"
-      }
+        "normal": "faces/noodle.png",
+        "dazed": "faces/noodle-dazed.png",
+        "splat": "faces/noodle-splat.png"
+      },
+      "outfit": 2
     },
     {
       "id": "waffles",
       "name": "Waffles",
       "voice": 2,
       "faces": {
-        "normal": "faces/waffles.svg",
-        "dazed": "faces/waffles-dazed.svg"
-      }
+        "normal": "faces/waffles.png",
+        "dazed": "faces/waffles-dazed.png",
+        "splat": "faces/waffles-splat.png"
+      },
+      "outfit": 3
     },
     {
       "id": "chestnut",
       "name": "Chestnut",
       "voice": 2,
       "faces": {
-        "normal": "faces/chestnut.svg",
-        "dazed": "faces/chestnut-dazed.svg"
-      }
+        "normal": "faces/chestnut.png",
+        "dazed": "faces/chestnut-dazed.png",
+        "splat": "faces/chestnut-splat.png"
+      },
+      "outfit": 0
     },
     {
       "id": "snickerdoodle",
       "name": "Snickerdoodle",
       "voice": 0,
       "faces": {
-        "normal": "faces/snickerdoodle.svg",
-        "dazed": "faces/snickerdoodle-dazed.svg"
-      }
+        "normal": "faces/snickerdoodle.png",
+        "dazed": "faces/snickerdoodle-dazed.png",
+        "splat": "faces/snickerdoodle-splat.png"
+      },
+      "outfit": 1
     },
     {
       "id": "grumbles",
       "name": "Grandpa Grumbles",
       "voice": 2,
       "faces": {
-        "normal": "faces/grumbles.svg",
-        "dazed": "faces/grumbles-dazed.svg"
-      }
+        "normal": "faces/grumbles.png",
+        "dazed": "faces/grumbles-dazed.png",
+        "splat": "faces/grumbles-splat.png"
+      },
+      "outfit": 2
     },
     {
       "id": "nana-noel",
       "name": "Nana Noel",
       "voice": 3,
       "faces": {
-        "normal": "faces/nana-noel.svg",
-        "dazed": "faces/nana-noel-dazed.svg"
-      }
+        "normal": "faces/nana-noel.png",
+        "dazed": "faces/nana-noel-dazed.png",
+        "splat": "faces/nana-noel-splat.png"
+      },
+      "outfit": 3
     }
   ]
 }

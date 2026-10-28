@@ -28,8 +28,9 @@ window.addEventListener("popstate", () => {
   history.pushState({ game: true }, "");
 });
 
-// Not on this computer (localhost), where a stored copy would hide every edit while developing.
-const developing = ["localhost", "127.0.0.1"].includes(location.hostname);
+// Not while developing: on this computer (localhost), or a test copy over the home network (plain
+// http), where a stored copy would hide every edit.
+const developing = ["localhost", "127.0.0.1"].includes(location.hostname) || location.protocol === "http:";
 if (developing) window.game = game; // for poking at the game from the browser console
 if ("serviceWorker" in navigator && !developing) {
   navigator.serviceWorker.register("sw.js").catch(() => {
