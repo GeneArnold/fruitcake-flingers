@@ -215,6 +215,7 @@ export class PlayScene extends Phaser.Scene {
       if (at.y < THROW_LINE) this.release();
     });
     const up = (p) => {
+      audio.unlock();
       if (p.id !== this.pointerId) return;
       this.path.push(fingerAt(this, p));
       this.release();

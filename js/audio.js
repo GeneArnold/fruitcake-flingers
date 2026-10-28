@@ -19,7 +19,9 @@ export function unlock() {
     const data = noiseBuffer.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
   }
-  if (ctx.state === "suspended") ctx.resume();
+  // The music may have been asked for before sound was allowed: it starts now.
+  if (ctx.state === "running") playWantedMusic();
+  else ctx.resume().then(playWantedMusic, () => {});
 }
 
 function ready() {
@@ -142,11 +144,17 @@ function pitch(name) {
   return 440 * 2 ** ((STEPS[letter] + (sharp ? 1 : 0) + (octave - 4) * 12) / 12);
 }
 
-const music = { on: false, out: null, timer: null, song: Math.floor(Math.random() * SONGS.length), i: 0, t: 0, bell: 0 };
+const music = { wanted: false, on: false, out: null, timer: null, song: Math.floor(Math.random() * SONGS.length), i: 0, t: 0, bell: 0 };
 
 // Starts the music, or carries on where it stopped. It keeps playing from one level into the next.
+// Asked for before sound is allowed (no touch yet), it starts as soon as unlock() gets it going.
 export function startMusic() {
-  if (music.on || !ready()) return;
+  music.wanted = true;
+  playWantedMusic();
+}
+
+function playWantedMusic() {
+  if (!music.wanted || music.on || !ready()) return;
   music.on = true;
   music.out = ctx.createGain();
   music.out.gain.value = 1;
@@ -156,6 +164,12 @@ export function startMusic() {
 }
 
 export function stopMusic() {
+  music.wanted = false;
+  silence();
+}
+
+// Stops what's playing but keeps wanting it, so the next unlock() picks it up again.
+function silence() {
   if (!music.on) return;
   music.on = false;
   clearTimeout(music.timer);
@@ -166,7 +180,7 @@ export function stopMusic() {
 
 function queueMusic() {
   if (!music.on || !ready()) {
-    stopMusic();
+    silence();
     return;
   }
   const ahead = ctx.currentTime + 0.5;

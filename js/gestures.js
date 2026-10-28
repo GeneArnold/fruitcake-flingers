@@ -20,6 +20,7 @@ export function listenForGestures(scene, { onSwipe, onTap, lockMs = 500 }) {
     if (p.id === id) path.push(point(p));
   });
   const up = (p) => {
+    audio.unlock(); // phones only allow sound once a touch has ended, so try again here
     if (p.id !== id) return;
     id = null;
     const end = point(p);
