@@ -1,5 +1,7 @@
 // The levels, played in order in one game. A level is a background picture, the spots where elves appear,
 // the things not to hit, and its goal: the points needed in its ten fruitcakes to go on to the next.
+// An elf is worth about 230 points (more in the face, double in a combo), so a goal of 1,200 is
+// about five hits out of ten; each level after asks for a little more.
 // Adding a level is adding an entry here plus img/bg-<id>.jpg (tools/art-prompts.py makes one).
 //
 // Coordinates are game pixels on the 540 x 960 portrait screen. The bottom 260 px is the flick zone.
@@ -16,7 +18,7 @@ import { W, H } from "./ui.js";
 export const LEVELS = [
   {
     id: "house",
-    goal: 600,
+    goal: 1200,
     name: "The Front Yard",
     bg: { y: -100, fill: 0xfafdfe },
     spots: [
@@ -35,7 +37,7 @@ export const LEVELS = [
   },
   {
     id: "mall",
-    goal: 800,
+    goal: 1300,
     name: "The Mall",
     snow: false,
     spots: [
@@ -54,7 +56,7 @@ export const LEVELS = [
   },
   {
     id: "playground",
-    goal: 1000,
+    goal: 1500,
     name: "The Playground",
     spots: [
       { kind: "pop", x: 112, sillY: 490, clip: [60, 415, 105, 75], scale: 0.45, points: 300 },
@@ -71,7 +73,7 @@ export const LEVELS = [
   },
   {
     id: "workshop",
-    goal: 1200,
+    goal: 1600,
     name: "Santa's Workshop",
     snow: false,
     spots: [
@@ -89,7 +91,7 @@ export const LEVELS = [
   },
   {
     id: "rink",
-    goal: 1400,
+    goal: 1700,
     name: "The Ice Rink",
     spots: [
       { kind: "pop", x: 60, sillY: 500, clip: [15, 455, 90, 45], scale: 0.38, points: 300 },
@@ -107,7 +109,7 @@ export const LEVELS = [
   },
   {
     id: "morning",
-    goal: 1600,
+    goal: 1800,
     name: "Christmas Morning",
     snow: false,
     spots: [

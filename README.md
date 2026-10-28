@@ -24,8 +24,8 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
   QUIT (top left) closes the installed game on Android; on an iPhone it says to swipe it away,
   and in a browser tab it goes to thefunshed.com.
 - **A game** runs through the six levels in order, from the Front Yard to Christmas Morning. Each
-  level gives you 10 fruitcakes and has a **goal** (600 points on the first, more on each one
-  after; `goal` in `js/levels.js`). Make the goal and the next level starts by itself, with the
+  level gives you 10 fruitcakes and has a **goal** (1,200 points on the first, about five hits
+  out of ten, up to 1,800 on the last; `goal` in `js/levels.js`). Make the goal and the next level starts by itself, with the
   score carrying on; miss it and it's GAME OVER. Clear all six to win.
 - **Play:** touch the bottom of the screen and flick the fruitcake at an elf. A slow or sideways
   flick does not count and does not use up a cake. The top left shows the score and how close
