@@ -7,8 +7,9 @@ import { NameScene } from "./scenes/NameScene.js";
 import { PlayScene } from "./scenes/PlayScene.js";
 import { ResultsScene } from "./scenes/ResultsScene.js";
 import { TitleScene } from "./scenes/TitleScene.js";
-import { H, W, ZOOM } from "./ui.js";
+import { H, THEME, W, ZOOM } from "./ui.js";
 
+THEME.outline = 0x1b1030; // Fruitcake's night-sky navy round words and buttons
 audio.setEnabled(store.get("sound"));
 
 const game = new Phaser.Game({

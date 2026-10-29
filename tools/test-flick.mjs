@@ -1,6 +1,7 @@
 // Checks how swipes are read. Run from the project folder:  node tools/test-flick.mjs
 import assert from "node:assert/strict";
-import { aimAssist, readFlick, readSwipe } from "../js/flick.js";
+import { aimAssist, readFlick } from "../js/flick.js";
+import { readSwipe } from "../js/gestures.js";
 
 // A straight swipe from (x0, y0) to (x1, y1) over `ms` milliseconds, sampled at 60 Hz.
 function swipe(x0, y0, x1, y1, ms) {

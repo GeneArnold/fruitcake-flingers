@@ -1,18 +1,19 @@
-// After a game: the score, how far it got, where it landed on the board, a dare's outcome, and the
-// elves splatted. Two buttons: PLAY AGAIN, and TRASH TALK to text the score to someone; a small
-// "menu" goes back to the title. The score goes to the family board by itself.
+// After a game, laid out like every Fun Shed game's results: a wooden sign with the score and a
+// headline, a box of how the game went, then big buttons: PLAY AGAIN, TRASH TALK, SCORES and MENU.
+// The score stays on this phone's board.
 import * as audio from "../audio.js";
 import * as cast from "../cast.js";
-import * as online from "../online.js";
 import * as store from "../storage.js";
 import { shareRound, snapshot } from "../share.js";
 import { LEVELS } from "../levels.js";
-import { inside, listenForGestures } from "../gestures.js";
-import { W, face, nightSky, setupCamera, snowfall, text } from "../ui.js";
+import { listenForGestures } from "../gestures.js";
+import { face, nightSky, snowfall } from "../scenery.js";
+import { W, button, inside, setupCamera, text, woodSign } from "../ui.js";
 
-const PLAY = { x: W / 2 - 160, y: 752, w: 320, h: 72 };
-const SHARE = { x: W / 2 - 160, y: 840, w: 320, h: 64 };
-const MENU = { x: W / 2 - 80, y: 912, w: 160, h: 44 };
+const AGAIN = { x: W / 2 - 170, y: 620, w: 340, h: 84 };
+const SHARE = { x: W / 2 - 170, y: 726, w: 340, h: 70 };
+const BOARD = { x: W / 2 - 170, y: 820, w: 160, h: 60 };
+const MENU = { x: W / 2 + 10, y: 820, w: 160, h: 60 };
 
 export class ResultsScene extends Phaser.Scene {
   constructor() {
@@ -24,13 +25,14 @@ export class ResultsScene extends Phaser.Scene {
     nightSky(this);
     snowfall(this, 1);
     this.level = LEVELS[level];
-    this.round = { score, hits };
+    this.round = { score };
     const me = store.get("player");
 
-    text(this, W / 2, 70, allClear ? "ALL LEVELS CLEAR!" : "GAME OVER", 48, { color: allClear ? "#7CFC9A" : "#ffe066" });
-    const reached = allClear ? "beat all " + LEVELS.length + " levels" : `made it to level ${level + 1}: ${this.level.name}`;
-    text(this, W / 2, 116, `${me.initials} ${reached}`, 22, { color: "#cfd8ff", strokeThickness: 3 });
-    const scoreText = text(this, W / 2, 200, "0", 92, { color: "#ffffff" });
+    woodSign(this, W / 2, 200, 470, 300);
+    text(this, W / 2, 90, allClear ? "ALL CLEAR!" : "GAME OVER", 50, { color: allClear ? "#7CFC9A" : "#ffe066" });
+    const reached = allClear ? "beat every level" : `made it to ${this.level.name}`;
+    text(this, W / 2, 136, `${me.initials} · ${reached}`, 22, { color: "#fff3c4", strokeThickness: 4 });
+    const scoreText = text(this, W / 2, 212, "0", 90, { color: "#ffffff", strokeThickness: 10 });
     const countUp = Math.min(1200, 200 + score / 4);
     this.tweens.addCounter({
       from: 0, to: score, duration: countUp, ease: "Cubic.easeOut",
@@ -56,22 +58,19 @@ export class ResultsScene extends Phaser.Scene {
       headline = `YOUR BEST ${previousTop.toLocaleString()}`;
       cheer = false;
     }
-    const head = text(this, W / 2, 282, headline, 36, { color: colour });
+    const head = text(this, W / 2, 296, headline, 30, { color: colour, strokeThickness: 6 });
     if (colour === "#7CFC9A") this.tweens.add({ targets: head, scale: 1.1, duration: 450, yoyo: true, repeat: -1 });
     audio.play(cheer ? "cheer" : score > 0 ? "combo" : "groan");
 
-    this.showSplatted(hits, bestCombo);
+    this.showHowItWent(level, allClear, hits, bestCombo);
 
-    const buttons = this.add.graphics();
-    buttons.fillStyle(0x2e9e5b);
-    buttons.fillRoundedRect(PLAY.x, PLAY.y, PLAY.w, PLAY.h, 36);
-    buttons.fillStyle(0xe63946);
-    buttons.fillRoundedRect(SHARE.x, SHARE.y, SHARE.w, SHARE.h, 32);
-    text(this, W / 2, PLAY.y + PLAY.h / 2, "▶ PLAY AGAIN", 34);
-    this.shareText = text(this, W / 2, SHARE.y + SHARE.h / 2, "📣 TRASH TALK", 28);
-    text(this, W / 2, MENU.y + MENU.h / 2, "menu", 20, { color: "#cfd8ff", strokeThickness: 3 });
-    this.posted = text(this, W / 2, 316, "", 16, { color: "#cfd8ff", strokeThickness: 3 });
-    if (online.enabled() && score > 0) this.post();
+    const buttons = [
+      [AGAIN, 0x2a9d3a, "▶ PLAY AGAIN", 38],
+      [SHARE, 0xe63946, "📣 TRASH TALK", 30],
+      [BOARD, 0x2a6f9d, "HIGH SCORES", 22],
+      [MENU, 0x7d5a3c, "MENU", 24],
+    ];
+    this.shareText = buttons.map(([r, c, words, size]) => button(this, r, c, words, size))[1].label;
 
     // The share picture is this screen, taken once the score has finished counting up.
     this.time.delayedCall(countUp + 150, () => snapshot(this.game).then((png) => (this.picture = png)));
@@ -82,8 +81,9 @@ export class ResultsScene extends Phaser.Scene {
         if (dir === "up") this.playAgain();
       },
       onTap: (x, y) => {
-        if (inside(x, y, PLAY)) this.playAgain();
+        if (inside(x, y, AGAIN)) this.playAgain();
         else if (inside(x, y, SHARE)) this.share();
+        else if (inside(x, y, BOARD)) this.scene.start("Board");
         else if (inside(x, y, MENU)) this.scene.start("Title");
       },
     });
@@ -94,36 +94,31 @@ export class ResultsScene extends Phaser.Scene {
     this.scene.start("Play", { level: 0 });
   }
 
-  showSplatted(hits, bestCombo) {
+  // A box of rows, each a picture, a label and a number: elves splatted, the elf hit most, levels
+  // cleared, and the best combo if there was one.
+  showHowItWent(level, allClear, hits, bestCombo) {
     const list = Object.entries(hits)
       .map(([id, n]) => ({ e: cast.elf(id), n }))
       .filter((h) => h.e)
       .sort((a, b) => b.n - a.n);
     this.mostHit = list[0];
-    if (list.length === 0) {
-      text(this, W / 2, 500, "You hit nobody!\nThe fruitcakes survived.", 30);
-      return;
-    }
-    text(this, W / 2, 344, "YOU SPLATTED", 24);
-    const cols = 5;
-    const cell = W / cols;
-    list.slice(0, 10).forEach(({ e, n }, i) => {
-      const cx = cell * ((i % cols) + 0.5);
-      const cy = 420 + Math.floor(i / cols) * 140;
-      face(this, cx, cy, cast.faceKey(this, e, "dazed"), 88);
-      text(this, cx, cy + 56, e.name, 13, { strokeThickness: 3, wrap: cell - 4 });
-      text(this, cx + 30, cy + 30, `×${n}`, 22, { color: "#ffe066" });
-    });
-    if (bestCombo > 1) text(this, W / 2, 724, "Two in one throw: COMBO!", 22, { color: "#7CFC9A", strokeThickness: 4 });
-  }
+    const total = list.reduce((sum, h) => sum + h.n, 0);
+    const rows = [
+      [(x, y) => this.add.image(x, y, "fruitcake").setDisplaySize(48, 30), "Elves splatted", String(total)],
+      [(x, y) => this.add.image(x, y, "sleigh").setDisplaySize(52, 30), "Levels cleared", `${allClear ? LEVELS.length : level} of ${LEVELS.length}`],
+    ];
+    if (this.mostHit) rows.push([(x, y) => face(this, x, y, cast.faceKey(this, this.mostHit.e, "dazed"), 48), `Most: ${this.mostHit.e.name}`, `×${this.mostHit.n}`]);
+    if (bestCombo > 1) rows.push([(x, y) => text(this, x, y, "💥", 30), "Best combo", `×${bestCombo}`]);
 
-  // Sends the score to the family board; with no signal it waits on the phone for next time.
-  async post() {
-    const { score, hits } = this.round;
-    await online.postRound(store.GAME_BOARD, score, hits);
-    if (!this.scene.isActive()) return;
-    const waiting = store.get("outbox").length > 0;
-    this.posted.setText(waiting ? "no signal: it'll go on the family board next time" : "on the family board ✓");
+    const top = 360;
+    const gap = 54;
+    this.add.graphics().fillStyle(0x000000, 0.35).fillRoundedRect(70, top, W - 140, rows.length * gap + 22, 20);
+    rows.forEach(([picture, label, value], i) => {
+      const y = top + 40 + i * gap;
+      picture(115, y);
+      text(this, 150, y, label, 24, { originX: 0, strokeThickness: 5, wrap: 230 });
+      text(this, W - 100, y, value, 32, { originX: 1, color: "#ffe066", strokeThickness: 5 });
+    });
   }
 
   async share() {

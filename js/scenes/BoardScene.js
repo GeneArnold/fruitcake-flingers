@@ -1,15 +1,17 @@
 // The high scores, arcade style: the top 10 games, then MOST WANTED (the elves hit most).
-// Swipe sideways to flip pages; swipe up or down, or tap, to go back. With the family board online
-// the pages show the whole family; otherwise they show this phone.
+// A blue button flips between the pages and BACK goes to the title; swipes are shortcuts (sideways to
+// flip, up or down to go back). Both pages are this phone's: to get on its board, you play on it.
 import * as audio from "../audio.js";
 import * as cast from "../cast.js";
-import * as online from "../online.js";
 import * as store from "../storage.js";
 import { listenForGestures } from "../gestures.js";
-import { H, W, face, nightSky, setupCamera, text } from "../ui.js";
+import { face, nightSky } from "../scenery.js";
+import { W, button, inside, setupCamera, text } from "../ui.js";
 
 const PAGES = 2;
 const MOST_WANTED = 1; // the page after the high scores
+const PAGE = { x: 50, y: 830, w: 250, h: 64 };
+const BACK = { x: W - 220, y: 830, w: 170, h: 64 };
 const MEDALS = ["#ffd700", "#d9e1ea", "#e0995e"];
 
 export class BoardScene extends Phaser.Scene {
@@ -22,8 +24,8 @@ export class BoardScene extends Phaser.Scene {
     nightSky(this);
     this.page = 0;
     this.content = this.add.container(0, 0);
-    this.dots = this.add.graphics();
-    text(this, W / 2, H - 34, "swipe sideways for more · up or down to go back", 17, { color: "#cfd8ff", strokeThickness: 3 });
+    this.pageButton = button(this, PAGE, 0x2a6f9d, "", 24);
+    button(this, BACK, 0x7d5a3c, "BACK", 28);
     this.showPage();
 
     listenForGestures(this, {
@@ -31,7 +33,10 @@ export class BoardScene extends Phaser.Scene {
         if (dir === "left" || dir === "right") this.flip(dir === "left" ? 1 : -1);
         else this.scene.start("Title");
       },
-      onTap: () => this.scene.start("Title"),
+      onTap: (x, y) => {
+        if (inside(x, y, PAGE)) this.flip(1);
+        else if (inside(x, y, BACK)) this.scene.start("Title");
+      },
     });
   }
 
@@ -44,26 +49,11 @@ export class BoardScene extends Phaser.Scene {
     this.tweens.add({ targets: this.content, x: 0, alpha: 1, duration: 200, ease: "Cubic.easeOut" });
   }
 
-  async showPage() {
-    const page = this.page;
+  showPage() {
     this.content.removeAll(true);
-    this.drawDots();
-    if (page === MOST_WANTED) {
-      this.drawMostWanted(store.get("hits"), "THIS PHONE");
-      const family = await online.mostWanted();
-      if (family && Object.keys(family).length && this.page === page && this.scene.isActive()) {
-        this.content.removeAll(true);
-        this.drawMostWanted(family, "THE WHOLE FAMILY");
-      }
-      return;
-    }
-    this.drawScores(store.board(), "THIS PHONE");
-    const family = await online.topScores(store.GAME_BOARD);
-    // Until anyone has posted, the phone's own board is more fun than an empty one.
-    if (family?.length && this.page === page && this.scene.isActive()) {
-      this.content.removeAll(true);
-      this.drawScores(family, "THE WHOLE FAMILY");
-    }
+    this.pageButton.label.setText(this.page === MOST_WANTED ? "◀ HIGH SCORES" : "MOST WANTED ▶");
+    if (this.page === MOST_WANTED) this.drawMostWanted(store.get("hits"), "ON THIS PHONE");
+    else this.drawScores(store.board(), "ON THIS PHONE");
   }
 
   // Puts something on the current page, so flipping pages clears it.
@@ -82,7 +72,7 @@ export class BoardScene extends Phaser.Scene {
     }
     rows.slice(0, 10).forEach((r, i) => {
       const y = 214 + i * 62;
-      const mine = r.player ? r.player === me.id : r.initials === me.initials;
+      const mine = r.initials === me.initials;
       const colour = MEDALS[i] || (mine ? "#7CFC9A" : "#ffffff");
       if (mine) {
         const g = this.put(this.add.graphics());
@@ -108,7 +98,7 @@ export class BoardScene extends Phaser.Scene {
 
     const cols = 4;
     const cellW = W / cols;
-    const cellH = 136;
+    const cellH = 128;
     const size = 86;
     elves.forEach((e, i) => {
       const cx = cellW * ((i % cols) + 0.5);
@@ -121,15 +111,5 @@ export class BoardScene extends Phaser.Scene {
       badge.fillCircle(cx + size / 2 - 2, cy - size / 2 + 8, 18);
       this.put(text(this, cx + size / 2 - 2, cy - size / 2 + 8, count > 999 ? "999+" : String(count), count > 99 ? 13 : 17, { strokeThickness: 0 }));
     });
-  }
-
-  drawDots() {
-    this.dots.clear();
-    const gap = 20;
-    const x0 = W / 2 - ((PAGES - 1) * gap) / 2;
-    for (let i = 0; i < PAGES; i++) {
-      this.dots.fillStyle(i === this.page ? (i === MOST_WANTED ? 0xff6b6b : 0xffe066) : 0x5a6aa0);
-      this.dots.fillCircle(x0 + i * gap, H - 70, 6);
-    }
   }
 }

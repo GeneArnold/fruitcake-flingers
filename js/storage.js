@@ -2,17 +2,16 @@
 // The browser may clear it (clearing site data, or uninstalling the app); that only costs scores.
 const KEY = "fruitcake.v2";
 const BOARD_SIZE = 10;
-// A game runs through every level, so there is one board, under this name (here and online).
+// A game runs through every level, so there is one board, under this name.
 // Boards named after levels are from before, when each level was played on its own.
 export const GAME_BOARD = "game";
 
 const DEFAULTS = {
-  player: null,    // { id, initials }: who plays on this phone; id tells two "BOB"s apart online
+  player: null,    // { initials }: who plays on this phone
   sound: true,
   boards: {},      // board name → this phone's top 10, [{ initials, score, at }], best first
   hits: {},        // elf id → times hit on this phone
   rounds: 0,
-  outbox: [],      // finished rounds waiting to be sent to the family board
   challenge: null, // { initials, score } from a challenge link, until it is played
 };
 
@@ -47,12 +46,8 @@ export function set(name, value) {
 
 export function setInitials(initials) {
   const data = load();
-  data.player = { id: data.player?.id || randomId(), initials };
+  data.player = { initials };
   persist();
-}
-
-function randomId() {
-  return crypto.randomUUID?.() || Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
 export function board(name = GAME_BOARD) {

@@ -1,10 +1,11 @@
 // Arcade-style initials, once, the first time the game is opened (and again from the title).
-// Swipe up or down to change a letter, right for the next letter, left to go back; swipe right on
-// the last letter (or tap DONE) to finish. Taps work too: above or below a letter changes it.
+// Tap a letter to pick it, tap the arrows above or below it to change it, and tap DONE. Swipes are
+// shortcuts: up or down changes a letter, right goes to the next one, left back.
 import * as audio from "../audio.js";
 import * as store from "../storage.js";
 import { listenForGestures } from "../gestures.js";
-import { W, nightSky, setupCamera, snowfall, text } from "../ui.js";
+import { nightSky, snowfall } from "../scenery.js";
+import { W, button, setupCamera, text } from "../ui.js";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const SLOT_X = [150, 270, 390];
@@ -29,11 +30,8 @@ export class NameScene extends Phaser.Scene {
     this.slots = SLOT_X.map((x) => text(this, x, SLOT_Y, "A", 110, { color: "#ffffff" }));
     this.arrows = this.add.graphics();
     this.underline = this.add.graphics();
-    const done = this.add.graphics();
-    done.fillStyle(0x2a9d3a);
-    done.fillRoundedRect(DONE.x, DONE.y, DONE.w, DONE.h, 20);
-    this.doneText = text(this, W / 2, DONE.y + DONE.h / 2, "DONE", 40);
-    text(this, W / 2, 760, "swipe ↑ ↓ to change a letter\nswipe → for the next one", 22, { color: "#cfd8ff", strokeThickness: 3 });
+    this.doneText = button(this, DONE, 0x2a9d3a, "DONE", 40).label;
+    text(this, W / 2, 760, "tap ▲ ▼ to change a letter\ntap a letter to pick it", 22, { color: "#cfd8ff", strokeThickness: 3 });
     this.draw();
 
     listenForGestures(this, {

@@ -1,6 +1,5 @@
 // Loads the elves, their faces and the sayings, draws the placeholder art, then opens the game.
 import * as cast from "../cast.js";
-import * as online from "../online.js";
 import * as store from "../storage.js";
 import { readChallenge } from "../share.js";
 import { levelPictures } from "../levels.js";
@@ -38,7 +37,6 @@ export class BootScene extends Phaser.Scene {
     cast.setData(this.cache.json.get("elves"), this.cache.json.get("sayings"));
     makeTextures(this);
     readChallenge();
-    online.flush(); // rounds played offline last time
     this.scene.start(store.get("player") ? "Title" : "Name");
   }
 }

@@ -49,15 +49,3 @@ export function aimAssist(dirX, dirY, from, targets, maxDeg) {
   }
   return best || { dirX, dirY, target: null };
 }
-
-// A menu gesture → "up" | "down" | "left" | "right" | "tap" | null
-export function readSwipe(points) {
-  if (points.length === 0) return null;
-  const a = points[0];
-  const b = points.at(-1);
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  if (Math.hypot(dx, dy) < 30) return b.t - a.t < 600 ? "tap" : null;
-  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "right" : "left";
-  return dy > 0 ? "down" : "up";
-}

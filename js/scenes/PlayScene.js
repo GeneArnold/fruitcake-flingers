@@ -6,8 +6,8 @@ import * as store from "../storage.js";
 import { Elf } from "../elf.js";
 import { aimAssist, readFlick } from "../flick.js";
 import { LEVELS, paintLevel } from "../levels.js";
-import { inside } from "../gestures.js";
-import { H, W, bubble, fingerAt, floatText, setupCamera, snowfall, text } from "../ui.js";
+import { bubble, snowfall } from "../scenery.js";
+import { H, W, button, fingerAt, floatText, inside, setupCamera, text } from "../ui.js";
 
 const CAKES = 10;
 const PLATE = { x: W / 2, y: 862 };
@@ -16,8 +16,9 @@ const THROW_LINE = 610;   // a finger dragged above this line throws straight aw
 const CAKE_R = 30;        // the fruitcake's size for hitting things, before it shrinks with distance
 const FACE_BONUS = 50;
 const PAUSE = { x: W / 2 - 50, y: 0, w: 100, h: 92 };  // the pause button, in the middle of the top band
-const KEEP = { x: 90, y: 430, w: W - 180, h: 80 };
-const QUIT = { x: 90, y: 550, w: W - 180, h: 80 };
+const KEEP = { x: W / 2 - 150, y: 410, w: 300, h: 84 };
+const QUIT = { x: W / 2 - 150, y: 524, w: 300, h: 84 };
+const SOUND = { x: W / 2 - 150, y: 638, w: 300, h: 70 };
 
 // Within a level the game gets harder in three steps: elves duck sooner, walkers and fliers join in,
 // and there is less aim help.
@@ -118,8 +119,8 @@ export class PlayScene extends Phaser.Scene {
     this.cakeText.setText(`CAKE ${Math.min(this.cake + 1, CAKES)} / ${CAKES}`);
   }
 
-  // Paused: everything stops, with a choice to keep playing or quit to the title. Quitting drops the
-  // game, so nothing is scored or posted.
+  // Paused: everything stops, with KEEP PLAYING, QUIT (the game ends there and its score still
+  // counts) and SOUND on or off.
   pause() {
     if (this.paused || this.finished) return;
     this.pointerId = null;
@@ -129,35 +130,43 @@ export class PlayScene extends Phaser.Scene {
     this.tweens.pauseAll();
     this.time.paused = true;
     audio.stopMusic();
-    const dim = this.add.graphics();
-    dim.fillStyle(0x000000, 0.6);
-    dim.fillRect(0, 0, W, H);
-    const button = (r, colour) => {
-      dim.fillStyle(colour, 1);
-      dim.fillRoundedRect(r.x, r.y, r.w, r.h, 20);
-    };
-    button(KEEP, 0x2e9e5b);
-    button(QUIT, 0x9c3b26);
+    const dim = this.add.rectangle(0, 0, W, H, 0x000000, 0.6).setOrigin(0);
+    const buttons = [
+      button(this, KEEP, 0x2a9d3a, "KEEP PLAYING", 34),
+      button(this, QUIT, 0xe63946, "QUIT", 34),
+      (this.soundButton = button(this, SOUND, 0x2a6f9d, "", 28)),
+    ];
+    this.showSound();
     this.paused = this.add.container(0, 0, [
       dim,
       text(this, W / 2, 330, "PAUSED", 60, { color: "#ffe066" }),
-      text(this, W / 2, KEEP.y + KEEP.h / 2, "KEEP PLAYING", 32),
-      text(this, W / 2, QUIT.y + QUIT.h / 2, "QUIT", 32),
-      text(this, W / 2, QUIT.y + QUIT.h + 34, "quitting doesn't count this game", 18, { color: "#cfd8ff", strokeThickness: 3 }),
+      ...buttons.flatMap((b) => [b.g, b.label]),
+      text(this, W / 2, SOUND.y + SOUND.h + 40, "Quitting ends the game.\nYour score is still saved.", 20, { color: "#cfd8ff", strokeThickness: 4 }),
     ]).setDepth(100);
+  }
+
+  showSound() {
+    this.soundButton.label.setText(store.get("sound") ? "🔊 SOUND ON" : "🔇 SOUND OFF");
   }
 
   tapWhilePaused(at) {
     if (inside(at.x, at.y, QUIT)) {
       this.tweens.resumeAll(); // Phaser keeps a scene's clock and tweens paused into its next start
       this.time.paused = false;
-      this.scene.start("Title");
+      this.finished = true;
+      this.endGame();
     } else if (inside(at.x, at.y, KEEP)) {
       this.paused.destroy();
       this.paused = null;
       this.tweens.resumeAll();
       this.time.paused = false;
       audio.startMusic();
+    } else if (inside(at.x, at.y, SOUND)) {
+      const on = !store.get("sound");
+      store.set("sound", on);
+      audio.setEnabled(on);
+      this.showSound();
+      audio.play("pop");
     }
   }
 
@@ -343,7 +352,7 @@ export class PlayScene extends Phaser.Scene {
     this.bestCombo = Math.max(this.bestCombo, f.hits);
 
     const label = where === "face" ? `FACE SHOT! +${pts}` : `+${pts}`;
-    floatText(this, elf.x, elf.y - 60 * elf.s, label, where === "face" ? "#ff9ec4" : "#ffe066");
+    floatText(this, elf.x, elf.y - 60 * elf.s, label, where === "face" ? "#ff9ec4" : "#ffe066", 34);
     const saying = cast.randomSaying("hit");
     bubble(this, elf.x, elf.y - 90 * elf.s, saying.text);
     audio.play("splat");
@@ -451,11 +460,16 @@ export class PlayScene extends Phaser.Scene {
         this.scene.start("Play", { level: this.levelIndex + 1, run: { score: this.score, hits: this.hits, bestCombo: this.bestCombo } });
         return;
       }
-      const result = store.recordRound(store.GAME_BOARD, this.score, this.hits);
-      this.scene.start("Results", {
-        level: this.levelIndex, allClear: this.goalMade, score: this.score, hits: this.hits,
-        bestCombo: this.bestCombo, challenge: this.challenge, ...result,
-      });
+      this.endGame();
+    });
+  }
+
+  // The game is over (or quit): the score goes on the boards and the results come up.
+  endGame() {
+    const result = store.recordRound(store.GAME_BOARD, this.score, this.hits);
+    this.scene.start("Results", {
+      level: this.levelIndex, allClear: this.goalMade && this.levelIndex === LEVELS.length - 1, score: this.score,
+      hits: this.hits, bestCombo: this.bestCombo, challenge: this.challenge, ...result,
     });
   }
 }

@@ -6,12 +6,14 @@ frontend:
   phases:
     build:
       commands:
+        # The commit comes from git; a build started by hand in the console can set AWS_COMMIT_ID to "HEAD".
+        - git rev-parse HEAD > .commit 2>/dev/null || echo "$AWS_COMMIT_ID" > .commit
         - mkdir -p dist
         - cp -r index.html style.css manifest.webmanifest sw.js vendor js elves sayings icons img dist/
-        - sed -i "s/fruitcake-dev/fruitcake-$(echo "$AWS_COMMIT_ID" | cut -c1-12)/" dist/sw.js
+        - sed -i "s/fruitcake-dev/fruitcake-$(cut -c1-12 .commit)/" dist/sw.js
         - grep -q 'fruitcake-dev' dist/sw.js && echo "sw.js VERSION was not stamped" && exit 1 || true
         # The version the title screen shows, and version.json, which tells installed copies a newer one is out.
-        - ID=$(echo "$AWS_COMMIT_ID" | cut -c1-12); BUILT="$(TZ=America/New_York date '+%b %-d, %-I:%M%p')"; sed -i "s/VERSION = \"dev\"/VERSION = \"$ID\"/; s/BUILT = \"\"/BUILT = \"$BUILT\"/" dist/js/version.js; echo "{\"version\":\"$ID\",\"built\":\"$BUILT\"}" > dist/version.json
+        - ID=$(cut -c1-12 .commit); BUILT="$(TZ=America/New_York date '+%b %-d, %-I:%M%p')"; sed -i "s/VERSION = \"dev\"/VERSION = \"$ID\"/; s/BUILT = \"\"/BUILT = \"$BUILT\"/" dist/js/version.js; echo "{\"version\":\"$ID\",\"built\":\"$BUILT\"}" > dist/version.json
         - grep -q '"dev"' dist/js/version.js && echo "version.js was not stamped" && exit 1 || true
   artifacts:
     baseDirectory: dist

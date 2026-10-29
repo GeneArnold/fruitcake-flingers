@@ -18,8 +18,8 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
 
 ## How to play
 
-- **First time:** swipe in your three initials, arcade style (↑ ↓ change a letter, → next).
-- **Title:** swipe up (or tap the picture) to play, down for the high scores.
+- **First time:** your three initials, arcade style: tap a letter to pick it, ▲ ▼ to change it, then DONE.
+- **Title:** tap ▶ PLAY, or HIGH SCORES. (Swiping up or down does the same, as a shortcut.)
   Tap your initials (top right) to change them.
   There's no quit button: a phone won't let a web game close itself, so you leave it like any app.
 - **A game** runs through the six levels in order, from the Front Yard to Christmas Morning. Each
@@ -29,13 +29,13 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
 - **Play:** touch the bottom of the screen and flick the fruitcake at an elf. A slow or sideways
   flick does not count and does not use up a cake. The top left shows the score and how close
   you are to the level's goal.
-  The pause button (top middle) stops the game, with KEEP PLAYING or QUIT; quitting doesn't
-  count the game. Switching to another app pauses it too.
+  The pause button (top middle) stops the game, with KEEP PLAYING, QUIT (the game ends and its
+  score still counts) and SOUND on or off. Switching to another app pauses it too.
 - Hit two elves with one fruitcake for a combo (double points), right in the face for +50.
-- **After a game:** PLAY AGAIN, or TRASH TALK to text your score with a dare link; "menu" goes
-  back to the title. The score goes on the family board by itself.
-- **High scores:** the top 10 games (board `game`, here and on the family board), then MOST
-  WANTED, the elves hit most. Swipe sideways.
+- **After a game:** the score on a wooden sign, how the game went, then PLAY AGAIN, TRASH TALK (text
+  your score with a dare link), HIGH SCORES and MENU.
+- **High scores:** this phone's top 10 games, then MOST WANTED, the elves this phone has hit most.
+  Scores never leave the phone: to get on its board, you play on it. The blue button flips between them; BACK goes to the title.
 - **Dares:** a shared link like `…/?beat=GEN-4250-game` puts "GEN DARES YOU: BEAT 4,250" on the
   title, and the results say who won.
 
@@ -44,7 +44,7 @@ On localhost the offline cache is switched off, so edits show up on a plain relo
 The game is at **https://fruitcake.thefunshed.com**. `thefunshed.com` is the home for all of Gene's fun
 projects, games and otherwise, one subdomain each, registered in Route 53 in the same account.
 
-Everything online (Amplify and the score service) lives in the **Entertainment** AWS account, a
+Everything online (Amplify and the domain) lives in the **Entertainment** AWS account, a
 member of the Gene Arnold Consulting organization, so it stays separate from Ask Bento and other products.
 
 The game is hosted on Amplify, connected to the GitHub repo: **every push to `main` is a release.**
@@ -56,15 +56,12 @@ The game asks the site for `version.json` when the title screen opens and whenev
 back to the front; if a newer release is out, an orange **NEW VERSION! TAP TO UPDATE** button
 appears, which throws away the stored copy and reloads. Tapping the version checks on demand.
 
-## The family score board
+## Scores stay on the phone
 
-The online high scores and the everyone-wide MOST WANTED count live in the **Shed service** at
-`https://api.thefunshed.com`, shared by every Fun Shed app. Its code is in the private `shed` repo
-(GitHub: GeneArnold/shed). This game is the `fruitcake` app there, and its address is `scoresUrl` in
-`js/config.js`; set it to `null` to keep every board on the phone.
-
-- A round posts its score and its elf hits in one request (`POST /v1/fruitcake/scores`).
-- Rounds played with no signal wait on the phone and post the next time the game opens.
+There's no online board (Gene, 2026-10-29: the Fun Shed kit's "Scores are phone-only"). The game is
+open source, so an online board couldn't be kept free of cheats and rude initials. Each phone keeps
+its own top 10 and MOST WANTED; 📣 TRASH TALK is how scores get shared. The only thing the game asks
+the internet for is `version.json`, to spot a new release.
 
 ## Files
 
@@ -77,14 +74,15 @@ The online high scores and the everyone-wide MOST WANTED count live in the **She
 | `sayings/voices/v<n>/` | Recorded lines, one folder per elf voice |
 | `js/levels.js` | The levels: a background picture, elf spots, a goal. Add a level here |
 | `js/flick.js` | Turns a swipe into a throw (tested by `node tools/test-flick.mjs`) |
+| `js/ui.js`, `js/gestures.js`, `js/install.js`, `js/update.js` | The Fun Shed kit's shared files, copied as they are from Turkey Escape (`// Fun Shed kit` marker, now v1.3–v1.4; Fruitcake sets its navy outline with `THEME` in `js/main.js`); the rules are in `~/Workspace/thefunshed/wiki/kit.md` |
+| `js/scenery.js` | Fruitcake's own bits of screen: speech bubbles, elf faces, the night sky, falling snow |
 | `js/elf.js` | One elf: pops up, walks or flies, gets splatted |
 | `js/cast.js` | The elves and sayings, who appears next, which voice clip to play |
-| `js/storage.js` | What the phone remembers: initials, its top 10 games, hits, unsent games |
-| `js/online.js` | Talks to the Shed service; queues rounds while offline |
+| `js/storage.js` | What the phone remembers: initials, its top 10 games, hits |
 | `js/update.js`, `js/version.js` | The version on the title screen, the check for a newer release, the update button |
-| `js/install.js` | The title screen's "install me" hint, for phones playing in a browser tab |
+| `js/install.js` | The title screen's install hint: a one-tap install where the browser allows it, otherwise a small "how to install" link to thefunshed.com/install |
 | `js/share.js` | Trash talk: the share sheet (or a text message), the score picture, dare links |
-| `js/config.js` | Where the game lives (for dare links) and the Shed service's address |
+| `js/config.js` | Where the game lives (for dare links) |
 | `js/textures.js` | The little things drawn in code (crumbs, stars, snow, the plate), and stand-ins for any missing picture |
 | `js/audio.js` | Sound effects, the level-start fanfare, the holiday music (public-domain carols played in code: add one to `SONGS`), and the voice clips |
 | `js/scenes/` | Boot, Name (initials), Title, Play, Results, Board (high scores) |
